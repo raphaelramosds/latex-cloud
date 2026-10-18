@@ -1,0 +1,2824 @@
+% =====================================================================
+%  Capítulo 10 - Estrutura de Dados
+%  PPGEC2316 - Algoritmos de Engenharia (UFRN)
+%  Referência: Cormen, Leiserson, Rivest, Stein.
+%              Introduction to Algorithms, 4th ed., MIT Press, 2022 (Part III).
+%  Compilar com pdflatex (2x) ou xelatex.
+% =====================================================================
+\documentclass[aspectratio=169,10pt]{beamer}
+
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[utf8]{inputenc}
+  \usepackage[T1]{fontenc}
+  \usepackage{lmodern}
+\else
+  \usepackage{fontspec}
+\fi
+\usepackage[brazil]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,shapes.multipart,shapes.geometric,
+  fit,backgrounds,decorations.pathreplacing,babel}
+
+% ---------------------------------------------------------------------
+% Tema
+% ---------------------------------------------------------------------
+\usetheme{Madrid}
+\usefonttheme[onlymath]{serif}
+\definecolor{ufrn}{RGB}{0,72,132}
+\setbeamercolor{structure}{fg=ufrn}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize items}[circle]
+\setbeamerfont{frametitle}{size=\large}
+\setbeamercolor{alerted text}{fg=black}
+
+\AtBeginSection[]{%
+  \begin{frame}{Roteiro}
+    \tableofcontents[currentsection]
+  \end{frame}}
+
+% ---------------------------------------------------------------------
+% Cores das figuras
+% ---------------------------------------------------------------------
+\definecolor{tanc}{RGB}{238,215,170}
+\definecolor{nilb}{RGB}{160,200,235}
+\definecolor{hlb}{RGB}{40,110,200}
+\definecolor{orangec}{RGB}{235,130,30}
+\definecolor{rbred}{RGB}{200,35,35}
+\definecolor{brownc}{RGB}{150,105,60}
+
+% ---------------------------------------------------------------------
+% Pseudocódigo no estilo do livro (CLRS, 4a ed.)
+% ---------------------------------------------------------------------
+\newcounter{pcline}
+\newlength{\pcind}\setlength{\pcind}{1.2em}
+% \begin{pseudo}[tamanho]{cabeçalho} ... \end{pseudo}
+\newenvironment{pseudo}[2][\footnotesize]{%
+  \par\noindent\begin{minipage}{\linewidth}#1\normalfont\rmfamily
+  \setlength{\parindent}{0pt}\setlength{\parskip}{0pt}%
+  \setcounter{pcline}{0}%
+  #2\par\smallskip}%
+  {\par\end{minipage}\par}
+% \li[nível de indentação] linha numerada
+\newcommand{\li}[1][0]{\par\stepcounter{pcline}%
+  \hangindent=\dimexpr2.6em+#1\pcind+\pcind\relax\hangafter=1
+  \makebox[1.2em][r]{\tiny\color{gray}\arabic{pcline}}\hspace{0.8em}%
+  \hspace*{#1\pcind}\ignorespaces}
+\newcommand{\Cm}[1]{\hfill{\color{gray!70!black}\ // #1}}
+\newcommand{\kw}[1]{\textbf{#1}}
+\newcommand{\IF}{\kw{if}\ }
+\newcommand{\ELSE}{\kw{else}\ }
+\newcommand{\ELSEIF}{\kw{elseif}\ }
+\newcommand{\WHILE}{\kw{while}\ }
+\newcommand{\REPEAT}{\kw{repeat}}
+\newcommand{\UNTIL}{\kw{until}\ }
+\newcommand{\RETURN}{\kw{return}\ }
+\newcommand{\ERROR}{\kw{error}\ }
+\newcommand{\PRINT}{\kw{print}\ }
+\newcommand{\AND}{\ \kw{and}\ }
+\newcommand{\OR}{\ \kw{or}\ }
+\newcommand{\NIL}{\textnormal{\rmfamily\textsc{nil}}}
+\newcommand{\RED}{\textnormal{\rmfamily\textsc{red}}}
+\newcommand{\BLACK}{\textnormal{\rmfamily\textsc{black}}}
+\newcommand{\TRUE}{\textnormal{\rmfamily\textsc{true}}}
+\newcommand{\FALSE}{\textnormal{\rmfamily\textsc{false}}}
+\newcommand{\DELETED}{\textnormal{\rmfamily\textsc{deleted}}}
+\newcommand{\proc}[1]{\textnormal{\rmfamily\textsc{#1}}}
+\newcommand{\at}[1]{.\mathit{#1}}
+\newcommand{\eqq}{\mathrel{=\!=}}
+\newcommand{\id}[1]{\textit{#1}}
+
+% ---------------------------------------------------------------------
+% Estilos TikZ
+% ---------------------------------------------------------------------
+\tikzset{
+  >={Stealth[length=2mm]},
+  cell/.style={draw, minimum width=6mm, minimum height=6mm, inner sep=0pt,
+    font=\small, anchor=center},
+  idx/.style={font=\scriptsize, text=gray, inner sep=1pt},
+  ptr/.style={-{Stealth[length=2mm]}, thick},
+  ptrdot/.style={{Circle[length=2.6pt]}-{Stealth[length=2mm]}, thick},
+  vtx/.style={circle, draw, thick, minimum size=6.5mm, inner sep=0pt,
+    font=\small, fill=white},
+  hv/.style={vtx, fill=hlb, text=white, draw=hlb!70!black},
+  ov/.style={vtx, fill=orangec, text=white, draw=orangec!70!black},
+  hedge/.style={draw=hlb, line width=1.8pt},
+  oedge/.style={draw=orangec, line width=1.8pt},
+  rb/.style={circle, minimum size=6.5mm, inner sep=0pt, font=\small\bfseries,
+    text=white, thick},
+  R/.style={rb, fill=rbred, draw=rbred!60!black},
+  B/.style={rb, fill=black, draw=black},
+  Cc/.style={rb, fill=brownc, draw=brownc!60!black},
+  DB/.style={rb, fill=black, draw=black, double=white, double distance=0.9pt},
+  sub/.style={draw, isosceles triangle, shape border rotate=90,
+    isosceles triangle apex angle=45, minimum height=6.5mm, inner sep=0pt,
+    fill=gray!15, anchor=apex, font=\scriptsize},
+  nilsq/.style={rectangle, fill=black, text=white, font=\tiny,
+    minimum width=6mm, minimum height=3.5mm, inner sep=0pt},
+  lbl/.style={font=\footnotesize},
+  badge/.style={circle, fill=hlb, text=white, font=\tiny\bfseries,
+    minimum size=3.6mm, inner sep=0pt},
+  ll/.style={rectangle split, rectangle split horizontal,
+    rectangle split parts=3, draw, thick, inner sep=1.5pt,
+    minimum height=6mm, font=\small,
+    rectangle split part fill={white,tanc,white}},
+  visited/.style={rectangle split part fill={white,hlb!30,white}},
+  found/.style={rectangle split part fill={white,hlb!80,white}},
+  newn/.style={rectangle split part fill={white,orangec!70,white}},
+  delnode/.style={dashed, draw=gray, text=gray,
+    rectangle split part fill={white,gray!15,white}},
+  sentinel/.style={rectangle split part fill={nilb,nilb,nilb}},
+}
+
+% Array horizontal: prefixo, origem, valores, condição (em \i) p/ célula ocupada
+\newcommand{\fillarray}[4]{%
+  \foreach \v [count=\i] in {#3} {%
+    \pgfmathtruncatemacro{\isf}{#4}%
+    \ifnum\isf=1 \def\fc{tanc}\else\def\fc{white}\fi
+    \node[cell, fill=\fc] (#1\i) at ($(#2)+(\i*0.6-0.6,0)$) {\v};
+    \node[idx] at ($(#1\i.north)+(0,0.17)$) {\i};
+  }}
+% Array simples (sem índices): prefixo, origem, valores, cor
+\newcommand{\rowarray}[4]{%
+  \foreach \v [count=\i] in {#3} {%
+    \node[cell, fill=#4] (#1\i) at ($(#2)+(\i*0.6-0.6,0)$) {\v};
+  }}
+
+% Listas duplamente ligadas
+\newcommand{\llnode}[4][]{%
+  \node[ll,#1] (#2) at (#3)
+    {\nodepart{one}\hspace{2mm}\nodepart{two}\makebox[4.5mm]{#4}%
+     \nodepart{three}\hspace{2mm}};}
+\newcommand{\llnext}[3][black]{%
+  \draw[ptrdot, draw=#1] ($(#2.two split)!0.5!(#2.east)+(0,0.08)$)
+     -- ($(#3.west)+(0,0.08)$);}
+\newcommand{\llprev}[3][black]{%
+  \draw[ptrdot, draw=#1] ($(#3.west)!0.5!(#3.one split)+(0,-0.08)$)
+     -- ($(#2.east)+(0,-0.08)$);}
+\newcommand{\lllink}[3][black]{\llnext[#1]{#2}{#3}\llprev[#1]{#2}{#3}}
+\newcommand{\llnilnext}[1]{\draw[thick] (#1.two split south) -- (#1.north east);}
+\newcommand{\llnilprev}[1]{\draw[thick] (#1.south west) -- (#1.one split north);}
+% fechamento circular com sentinela: #2 = sentinela, #3 = cauda
+\newcommand{\sentwrap}[3][black]{%
+  \draw[ptrdot, draw=#1] ($(#3.two split)!0.5!(#3.east)+(0,0.08)$)
+     -- ++(0.35,0) |- ($(#2.north)+(0,0.45)$) -- (#2.north);
+  \draw[ptrdot, draw=#1] ($(#2.west)!0.5!(#2.one split)+(0,-0.08)$)
+     -- ++(-0.35,0) |- ($(#3.south)+(0,-0.45)$) -- (#3.south);}
+
+% Nó de árvore com ponteiros (p | left | right) - Figuras 10.6 e 10.7
+\newcommand{\tnode}[2]{%
+  \begin{scope}[shift={(#2)}]
+    \draw[thick, fill=white] (-0.4,-0.3) rectangle (0.4,0.3);
+    \draw[thick] (-0.4,0) -- (0.4,0); \draw[thick] (0,-0.3) -- (0,0);
+    \coordinate (#1-p) at (0,0.15);
+    \coordinate (#1-l) at (-0.2,-0.15);
+    \coordinate (#1-r) at (0.2,-0.15);
+    \coordinate (#1-top) at (0,0.3);
+    \coordinate (#1-bot) at (0,-0.3);
+    \coordinate (#1-w) at (-0.4,-0.15);
+  \end{scope}}
+\newcommand{\nilp}[1]{\draw ($(#1-p)+(-0.4,-0.15)$) -- ($(#1-p)+(0.4,0.15)$);}
+\newcommand{\nill}[1]{\draw ($(#1-l)+(-0.2,-0.15)$) -- ($(#1-l)+(0.2,0.15)$);}
+\newcommand{\nilr}[1]{\draw ($(#1-r)+(-0.2,-0.15)$) -- ($(#1-r)+(0.2,0.15)$);}
+
+% ---------------------------------------------------------------------
+\title[Cap. 10 -- Estrutura de Dados]{Capítulo 10 -- Estrutura de Dados}
+\subtitle{PPGEC2316 -- Algoritmos de Engenharia}
+\author{Raphael Ramos da Silva}
+\institute[UFRN]{Universidade Federal do Rio Grande do Norte}
+\date{\today}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+  \begin{center}
+    \scriptsize Referência: T.~H. Cormen, C.~E. Leiserson, R.~L. Rivest, C.~Stein.
+    \emph{Introduction to Algorithms}, 4\textsuperscript{a} ed., MIT Press, 2022 -- Parte III.
+  \end{center}
+\end{frame}
+
+\begin{frame}{Roteiro}
+  \tableofcontents
+\end{frame}
+
+% =====================================================================
+\section{Introdução: conjuntos dinâmicos}
+% =====================================================================
+
+\begin{frame}{Conjuntos dinâmicos}
+  \begin{columns}[c]
+    \begin{column}{0.56\textwidth}
+      \begin{itemize}
+        \item Conjuntos manipulados por algoritmos podem crescer, encolher ou
+              mudar ao longo do tempo: são conjuntos \alert{dinâmicos}.
+        \item Um conjunto dinâmico que suporta inserir, remover e testar
+              pertinência é chamado de \alert{dicionário}.
+        \item Cada elemento é um \alert{objeto}, acessado por meio de um ponteiro, contendo:
+          \begin{itemize}
+            \item uma \alert{chave} (\textit{key}) identificadora;
+            \item atributos manipulados pelas operações (p.\,ex.\ ponteiros).
+          \end{itemize}
+        \item Algumas estruturas supõem chaves de um conjunto \alert{totalmente
+              ordenado} (permite falar em mínimo, próximo maior, \dots).
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \centering
+      \begin{tikzpicture}
+        \node[rectangle split, rectangle split horizontal, rectangle split parts=3,
+              draw, thick, font=\small,
+              rectangle split part fill={tanc,white,white}] (o)
+              {\textit{key}\nodepart{two}\textit{prev}%
+               \nodepart{three}\textit{next}};
+        \node[above=8mm of o.west, anchor=west] (x) {$x$};
+        \draw[ptr] (x) -- (o.north west);
+        \node[below=3mm of o, font=\footnotesize, align=center]
+          {objeto apontado por $x$\\ atributos: $x\at{key}$, $x\at{prev}$, $x\at{next}$};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Operações em conjuntos dinâmicos}
+  \begin{columns}[t]
+    \begin{column}{0.5\textwidth}
+      \textbf{Consultas} (\emph{queries})
+      \begin{description}\small
+        \item[\proc{Search}$(S,k)$] retorna um ponteiro $x$ para um elemento com
+             $x\at{key}=k$, ou \NIL.
+        \item[\proc{Minimum}$(S)$, \proc{Maximum}$(S)$] elemento de menor (maior) chave.
+        \item[\proc{Successor}$(S,x)$] próximo elemento maior que $x$, ou \NIL\ se $x$ é o máximo.
+        \item[\proc{Predecessor}$(S,x)$] próximo elemento menor que $x$, ou \NIL\ se $x$ é o mínimo.
+      \end{description}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \textbf{Operações modificadoras}
+      \begin{description}\small
+        \item[\proc{Insert}$(S,x)$] adiciona ao conjunto o elemento apontado por $x$.
+        \item[\proc{Delete}$(S,x)$] dado um \emph{ponteiro} $x$ (não uma chave),
+             remove $x$ de $S$.
+      \end{description}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% \begin{frame}{Visão geral}
+%   \small
+%   \begin{itemize}
+%     \item Implementar um conjunto dinâmico com um simples array é fácil, mas:
+%       \begin{itemize}
+%         \item \emph{array não ordenado}: \proc{Insert} e \proc{Delete} em $\Theta(1)$,
+%               as demais operações em $\Theta(n)$;
+%         \item \emph{array ordenado}: \proc{Minimum}, \proc{Maximum}, \proc{Successor},
+%               \proc{Predecessor} em $\Theta(1)$, \proc{Search} em $O(\lg n)$ (busca binária),
+%               mas \proc{Insert} e \proc{Delete} em $\Theta(n)$.
+%       \end{itemize}
+%   \end{itemize}
+%   \vspace{2mm}
+%   \centering
+%   \begin{tabular}{@{}lll@{}}
+%     \toprule
+%     Cap. & Estruturas & Destaque \\ \midrule
+%     10 & arrays, matrizes, \emph{stacks}, \emph{queues}, \emph{linked lists}, árvores
+%        & estruturas elementares \\
+%     11 & \emph{hash tables} & dicionário com tempo médio $O(1)$ \\
+%     12 & \emph{binary search trees} & todas as operações em $O(h)$ \\
+%     13 & \emph{red-black trees} & árvore balanceada: $O(\lg n)$ no pior caso \\
+%     \bottomrule
+%   \end{tabular}
+% \end{frame}
+
+% =====================================================================
+\section{Arrays e matrizes}
+% =====================================================================
+
+\begin{frame}{Arrays}
+  \begin{itemize}
+    \item Um array é armazenado como uma \alert{sequência contígua de bytes} na memória.
+    \item Se o primeiro índice é $s$, o array começa no endereço $a$ e cada elemento
+          ocupa $b$ bytes, o $i$-ésimo elemento ocupa os bytes
+          \[ a + b(i-s) \quad\text{até}\quad a + b(i-s+1) - 1 . \]
+    \item $s=1$: bytes $a+b(i-1)$ a $a+bi-1$; \quad $s=0$: bytes $a+bi$ a $a+b(i+1)-1$.
+    \item No modelo RAM, acessar qualquer elemento leva \alert{tempo constante}, independentemente do índice.
+  \end{itemize}
+  \centering
+  \begin{tikzpicture}[byte/.style={draw, minimum width=3.5mm, minimum height=5mm, inner sep=0pt}]
+    \foreach \e in {0,...,4} {
+      \ifnum\e=2 \def\fc{tanc}\else\def\fc{white}\fi
+      \foreach \bb in {0,...,3} {
+        \node[byte, fill=\fc] at (\e*1.4+\bb*0.35, 0) {};
+      }
+      \pgfmathtruncatemacro{\ii}{\e+1}
+      \draw[decorate, decoration={brace, amplitude=4pt}]
+        (\e*1.4-0.15, 0.32) -- (\e*1.4+1.2, 0.32)
+        node[midway, above=3pt, font=\footnotesize] {$A[\ii]$};
+    }
+    \node[font=\scriptsize, below] at (-0.175,-0.25) {$a$};
+    \node[font=\scriptsize, below] at (1.225,-0.25) {$a+b$};
+    \node[font=\scriptsize, below] at (2.625,-0.25) {$a+2b$};
+    \node[font=\scriptsize, below] at (4.025,-0.25) {$a+3b$};
+    \node[font=\scriptsize, below] at (5.425,-0.25) {$a+4b$};
+    \node[font=\footnotesize, right] at (7.1,0) {\dots};
+    \node[font=\footnotesize, align=left, anchor=west] at (7.7,0.1)
+      {$s=1$, $b=4$:\\ $A[3]$ ocupa os bytes\\ $a+2b$ a $a+3b-1$};
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Arrays de elementos de tamanhos diferentes}
+  \begin{columns}[c]
+    \begin{column}{0.5\textwidth}
+      \begin{itemize}
+        \item A maioria das linguagens exige que todos os elementos de um array tenham o
+              mesmo tamanho $b$.
+        \item Se os objetos têm tamanhos variáveis, o array guarda \alert{ponteiros}
+              para os objetos (ponteiros têm tamanho fixo).
+        \item As fórmulas anteriores dão o endereço do \emph{ponteiro}; depois
+              basta segui-lo até o objeto.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \centering
+      \begin{tikzpicture}
+        \foreach \i in {1,...,4} {
+          \node[cell, fill=nilb] (p\i) at (\i*0.6,0) {};
+          \node[idx] at ($(p\i.north)+(0,0.17)$) {\i};
+        }
+        \node[left=1mm of p1] {$A$};
+        \node[draw, thick, fill=tanc, minimum width=10mm, minimum height=5mm] (o1) at (-0.3,-1.6) {};
+        \node[draw, thick, fill=tanc, minimum width=18mm, minimum height=5mm] (o2) at (1.4,-2.4) {};
+        \node[draw, thick, fill=tanc, minimum width=7mm, minimum height=5mm] (o3) at (2.7,-1.4) {};
+        \node[draw, thick, fill=tanc, minimum width=14mm, minimum height=5mm] (o4) at (3.9,-2.2) {};
+        \foreach \i in {1,...,4} { \draw[ptrdot] (p\i.center) -- (o\i.north); }
+        \node[font=\scriptsize, below=1mm of o2] {objetos de tamanhos variados};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Matrizes}
+  \begin{itemize}
+    \item Uma matriz $m\times n$ é normalmente representada por um ou mais arrays unidimensionais.
+    \item \alert{Row-major}: armazenada linha a linha. \alert{Column-major}: coluna a coluna.
+  \end{itemize}
+  \[
+    M = \begin{pmatrix} 1 & 2 & 3\\ 4 & 5 & 6 \end{pmatrix}
+    \qquad \text{row-major: } 1\,2\,3\;4\,5\,6
+    \qquad \text{column-major: } 1\,4\;2\,5\;3\,6
+  \]
+  \begin{itemize}
+    \item Com índices começando em $s$, o elemento $M[i,j]$ está na posição:
+      \begin{center}
+        \begin{tabular}{lll}
+          \toprule
+                   & row-major & column-major \\ \midrule
+          geral    & $s + n(i-s) + (j-s)$ & $s + m(j-s) + (i-s)$ \\
+          $s=1$    & $n(i-1) + j$         & $i + m(j-1)$ \\
+          $s=0$    & $ni + j$             & $i + mj$ \\
+          \bottomrule
+        \end{tabular}
+      \end{center}
+    \item Exemplo ($s=1$): $M[2,1]$ está na posição $3(2-1)+1 = 4$ (row-major)
+          e $2 + 2(1-1) = 2$ (column-major).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Matrizes: quatro formas de armazenar $M$}
+  \centering
+  \begin{tikzpicture}
+    % (a)
+    \rowarray{a}{0,0}{1,2,3,4,5,6}{tanc}
+    \node[font=\footnotesize] at (1.5,-0.8) {(a) row-major, array único};
+    % (b)
+    \rowarray{b}{6,0}{1,4,2,5,3,6}{tanc}
+    \node[font=\footnotesize] at (7.5,-0.8) {(b) column-major, array único};
+    % (c)
+    \node[cell, fill=nilb] (c1) at (0.6,-2.0) {};
+    \node[cell, fill=nilb] (c2) at (0.6,-2.6) {};
+    \node[left=1mm of c1, font=\small] {$A$};
+    \rowarray{cr1}{1.8,-2.0}{1,2,3}{tanc}
+    \rowarray{cr2}{1.8,-2.8}{4,5,6}{tanc}
+    \draw[ptrdot] (c1.center) -- (cr11.west);
+    \draw[ptrdot] (c2.center) -- (cr21.west);
+    \node[font=\footnotesize, align=center] at (1.6,-3.7) {(c) row-major, um array por linha\\$A[i][j]=M[i,j]$};
+    % (d)
+    \node[cell, fill=nilb] (d1) at (6.6,-1.8) {};
+    \node[cell, fill=nilb] (d2) at (6.6,-2.4) {};
+    \node[cell, fill=nilb] (d3) at (6.6,-3.0) {};
+    \node[left=1mm of d1, font=\small] {$A$};
+    \rowarray{dc1}{7.8,-1.6}{1,4}{tanc}
+    \rowarray{dc2}{7.8,-2.4}{2,5}{tanc}
+    \rowarray{dc3}{7.8,-3.2}{3,6}{tanc}
+    \draw[ptrdot] (d1.center) -- (dc11.west);
+    \draw[ptrdot] (d2.center) -- (dc21.west);
+    \draw[ptrdot] (d3.center) -- (dc31.west);
+    \node[font=\footnotesize, align=center] at (7.6,-4.0) {(d) column-major, um array por coluna\\$A[j][i]=M[i,j]$};
+  \end{tikzpicture}
+
+  \vspace{1mm}
+  \small Representações com array único costumam ser mais eficientes; múltiplos arrays
+  são mais flexíveis (permitem \emph{ragged arrays}, linhas de tamanhos diferentes).
+\end{frame}
+
+% \begin{frame}{Matrizes: representação em blocos}
+%   \begin{itemize}
+%     \item A matriz é dividida em blocos e \alert{cada bloco é armazenado contiguamente}.
+%     \item Exemplo: matriz $4\times4$ dividida em blocos $2\times 2$.
+%   \end{itemize}
+%   \centering
+%   \begin{tikzpicture}
+%     \def\bcol{{"tanc","nilb","orangec!45","green!25"}}
+%     \foreach \r in {0,...,3} {
+%       \foreach \c in {0,...,3} {
+%         \pgfmathtruncatemacro{\val}{4*\r+\c+1}
+%         \pgfmathtruncatemacro{\blk}{2*int(\r/2)+int(\c/2)}
+%         \ifcase\blk \def\fc{tanc}\or\def\fc{nilb}\or\def\fc{orangec!45}\or\def\fc{green!25}\fi
+%         \node[cell, fill=\fc] at (\c*0.6, -\r*0.6) {\val};
+%       }
+%     }
+%     \draw[ultra thick] (-0.3,0.3) rectangle (2.1,-2.1);
+%     \draw[ultra thick] (0.9,0.3) -- (0.9,-2.1);
+%     \draw[ultra thick] (-0.3,-0.9) -- (2.1,-0.9);
+%     \draw[->, thick] (2.5,-0.9) -- (3.3,-0.9);
+%     \foreach \v [count=\i] in {1,2,5,6,3,4,7,8,9,10,13,14,11,12,15,16} {
+%       \pgfmathtruncatemacro{\blk}{int((\i-1)/4)}
+%       \ifcase\blk \def\fc{tanc}\or\def\fc{nilb}\or\def\fc{orangec!45}\or\def\fc{green!25}\fi
+%       \node[cell, fill=\fc, minimum width=5.5mm] at (3.4+\i*0.55,-0.9) {\scriptsize\v};
+%     }
+%   \end{tikzpicture}
+%
+%   \vspace{2mm}
+%   \small Array único: $\langle 1,2,5,6,\;3,4,7,8,\;9,10,13,14,\;11,12,15,16\rangle$.
+% \end{frame}
+
+% =====================================================================
+\section{Stacks e queues}
+% =====================================================================
+
+\begin{frame}{Stacks (pilhas)}
+  \begin{columns}[c]
+    \begin{column}{0.6\textwidth}
+      \begin{itemize}
+        \item Conjunto dinâmico em que \proc{Delete} remove o elemento
+              \alert{inserido mais recentemente}: política \alert{LIFO}
+              (\emph{last-in, first-out}).
+        \item \proc{Insert} $\to$ \proc{Push}; \proc{Delete} $\to$ \proc{Pop}
+              (sem argumento de elemento).
+        \item Implementação com array $S[1:n]$ e atributos:
+          \begin{itemize}
+            \item $S\at{top}$: índice do elemento mais recente;
+            \item $S\at{size}$: tamanho $n$ do array.
+          \end{itemize}
+        \item A pilha é $S[1:S\at{top}]$; $S[1]$ é a base e $S[S\at{top}]$ o topo.
+        \item $S\at{top}=0$: pilha vazia. Pop em pilha vazia: \alert{underflow};
+              $S\at{top}$ excedendo $S\at{size}$: \alert{overflow}.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.38\textwidth}
+      \centering
+      \begin{tikzpicture}
+        \foreach \v [count=\i] in {15,6,2,9,,,} {
+          \ifnum\i<5 \def\fc{tanc}\else\def\fc{white}\fi
+          \node[cell, fill=\fc, minimum width=12mm] (s\i) at (0,\i*0.6) {\v};
+          \node[idx, left=1mm of s\i] {\i};
+        }
+        \node[below=1mm of s1, font=\footnotesize] {$S$ (base)};
+        \draw[<-, thick] (s4.east) -- ++(0.7,0) node[right, font=\footnotesize] {$S\at{top}=4$};
+        \draw[->, thick, hlb] ($(s7.north)+(-0.3,0.8)$) node[above, font=\scriptsize] {\proc{Push}}
+          -- ($(s7.north)+(-0.3,0.05)$);
+        \draw[<-, thick, orangec] ($(s7.north)+(0.3,0.8)$) node[above, font=\scriptsize] {\proc{Pop}}
+          -- ($(s7.north)+(0.3,0.05)$);
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Stacks: \proc{Stack-Empty}, \proc{Push} e \proc{Pop}}
+  \begin{columns}[c]
+    \begin{column}{0.42\textwidth}
+      \begin{pseudo}[\small]{\proc{Stack-Empty}$(S)$}
+        \li \IF $S\at{top} \eqq 0$
+        \li[1] \RETURN \TRUE
+        \li \ELSE \RETURN \FALSE
+      \end{pseudo}
+
+      \vspace{3mm}
+      \begin{pseudo}[\small]{\proc{Push}$(S,x)$}
+        \li \IF $S\at{top} \eqq S\at{size}$
+        \li[1] \ERROR ``overflow''
+        \li \ELSE $S\at{top} = S\at{top}+1$
+        \li[1] $S[S\at{top}] = x$
+      \end{pseudo}
+
+      \vspace{3mm}
+      \begin{pseudo}[\small]{\proc{Pop}$(S)$}
+        \li \IF \proc{Stack-Empty}$(S)$
+        \li[1] \ERROR ``underflow''
+        \li \ELSE $S\at{top} = S\at{top}-1$
+        \li[1] \RETURN $S[S\at{top}+1]$
+      \end{pseudo}
+
+      \vspace{2mm}
+      {\footnotesize Cada operação executa em $O(1)$.}
+    \end{column}
+    \begin{column}{0.56\textwidth}
+      \centering
+      \begin{tikzpicture}
+        \node[font=\small] at (-0.8,0) {(a)}; \node[font=\small] at (-0.3,0) {$S$};
+        \fillarray{a}{0.2,0}{15,6,2,9,,,}{\i<=4}
+        \draw[<-, thick] (a4.south) -- ++(0,-0.35) node[below, font=\scriptsize] {$S\at{top}=4$};
+        \node[font=\scriptsize, align=left, anchor=west] at (4.4,0) {4 elementos;\\ topo $=9$};
+
+        \node[font=\small] at (-0.8,-2.0) {(b)}; \node[font=\small] at (-0.3,-2.0) {$S$};
+        \fillarray{b}{0.2,-2.0}{15,6,2,9,17,3,}{\i<=6}
+        \node[cell, fill=orangec!70] at (b5) {17};
+        \node[cell, fill=orangec!70] at (b6) {3};
+        \draw[<-, thick] (b6.south) -- ++(0,-0.35) node[below, font=\scriptsize] {$S\at{top}=6$};
+        \node[font=\scriptsize, align=left, anchor=west] at (4.4,-2.0) {após \proc{Push}$(S,17)$\\ e \proc{Push}$(S,3)$};
+
+        \node[font=\small] at (-0.8,-4.0) {(c)}; \node[font=\small] at (-0.3,-4.0) {$S$};
+        \fillarray{c}{0.2,-4.0}{15,6,2,9,17,3,}{\i<=5}
+        \node[cell, text=gray] at (c6) {3};
+        \draw[<-, thick] (c5.south) -- ++(0,-0.35) node[below, font=\scriptsize] {$S\at{top}=5$};
+        \node[font=\scriptsize, align=left, anchor=west] at (4.4,-4.0) {após \proc{Pop}$(S)$\\ retornar 3};
+      \end{tikzpicture}
+
+      \vspace{1mm}
+      {\scriptsize Apenas as posições em bege pertencem à pilha: o 3 continua no array
+      em (c), mas não está mais na pilha.}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Queues (filas)}
+  \begin{columns}[c]
+    \begin{column}{0.56\textwidth}
+      \begin{itemize}
+        \item \proc{Delete} remove o elemento que está \alert{há mais tempo} no conjunto:
+              política \alert{FIFO} (\emph{first-in, first-out}).
+        \item \proc{Insert} $\to$ \proc{Enqueue}; \proc{Delete} $\to$ \proc{Dequeue}.
+        \item Array $Q[1:n]$, com $Q\at{size}=n$, armazena até $n-1$ elementos:
+          \begin{itemize}
+            \item $Q\at{head}$: índice da cabeça;
+            \item $Q\at{tail}$: próxima posição livre.
+          \end{itemize}
+        \item Elementos em $Q\at{head}, Q\at{head}+1, \dots, Q\at{tail}-1$, com
+              \alert{\emph{wrap around}}: a posição 1 segue a posição $n$.
+        \item Vazia: $Q\at{head}=Q\at{tail}$ (inicialmente ambos $=1$).
+        \item Cheia: $Q\at{head}=Q\at{tail}+1$, ou $Q\at{head}=1$ e $Q\at{tail}=Q\at{size}$.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.95]
+        \foreach \v [count=\i] in {3,5,,,,,15,6,9,8,4,17} {
+          \pgfmathsetmacro{\a}{90-(\i-1)*30}
+          \pgfmathsetmacro{\b}{\a-30}
+          \pgfmathtruncatemacro{\occ}{(\i<=2)||(\i>=7)}
+          \ifnum\occ=1 \def\fc{tanc}\else\def\fc{white}\fi
+          \draw[thick, fill=\fc] (\a:1.1) arc (\a:\b:1.1) -- (\b:1.9) arc (\b:\a:1.9) -- cycle;
+          \node[font=\small] at ({(\a+\b)/2}:1.5) {\v};
+          \node[idx] at ({(\a+\b)/2}:2.15) {\i};
+        }
+        \draw[<-, thick, hlb] ({90-6.5*30}:1.05) -- (0,0) node[below=1mm, font=\scriptsize, hlb] {};
+        \node[font=\scriptsize, hlb, align=center] at (0.05,0.25) {head\\$=7$};
+        \draw[<-, thick, orangec] ({90-2.5*30}:2.45) -- ({90-2.5*30}:3.0)
+          node[right, font=\scriptsize] {tail $=3$};
+      \end{tikzpicture}
+
+      {\scriptsize Visão circular da fila $Q[1:12]$.}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Queues: \proc{Enqueue} e \proc{Dequeue}}
+  \begin{columns}[c]
+    \begin{column}{0.36\textwidth}
+      \begin{pseudo}[\small]{\proc{Enqueue}$(Q,x)$}
+        \li $Q[Q\at{tail}] = x$
+        \li \IF $Q\at{tail} \eqq Q\at{size}$
+        \li[1] $Q\at{tail} = 1$
+        \li \ELSE $Q\at{tail} = Q\at{tail}+1$
+      \end{pseudo}
+
+      \vspace{4mm}
+      \begin{pseudo}[\small]{\proc{Dequeue}$(Q)$}
+        \li $x = Q[Q\at{head}]$
+        \li \IF $Q\at{head} \eqq Q\at{size}$
+        \li[1] $Q\at{head} = 1$
+        \li \ELSE $Q\at{head} = Q\at{head}+1$
+        \li \RETURN $x$
+      \end{pseudo}
+
+      \vspace{3mm}
+      % {\footnotesize Verificações de \emph{underflow}/\emph{overflow} omitidas.
+      % Cada operação: $O(1)$.}
+      {\footnotesize Cada operação: $O(1)$.}
+    \end{column}
+    \begin{column}{0.62\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.8, transform shape]
+        \node[font=\small] at (-1.2,0) {(a)}; \node at (-0.6,0) {$Q$};
+        \fillarray{a}{0,0}{,,,,,,15,6,9,8,4,}{(\i>=7)&&(\i<=11)}
+        \draw[<-, thick, hlb] (a7.south) -- ++(0,-0.35) node[below, font=\scriptsize] {$Q\at{head}=7$};
+        \draw[<-, thick, orangec] (a12.south) -- ++(0,-0.35) node[below, font=\scriptsize] {$Q\at{tail}=12$};
+
+        \node[font=\small] at (-1.2,-2.1) {(b)}; \node at (-0.6,-2.1) {$Q$};
+        \fillarray{b}{0,-2.1}{3,5,,,,,15,6,9,8,4,17}{(\i<=2)||(\i>=7)}
+        \node[cell, fill=orangec!70] at (b12) {17};
+        \node[cell, fill=orangec!70] at (b1) {3};
+        \node[cell, fill=orangec!70] at (b2) {5};
+        \draw[<-, thick, orangec] (b3.south) -- ++(0,-0.35) node[below, font=\scriptsize] {$Q\at{tail}=3$};
+        \draw[<-, thick, hlb] (b7.south) -- ++(0,-0.35) node[below, font=\scriptsize] {$Q\at{head}=7$};
+        \node[font=\scriptsize, anchor=west] at (7.4,-1.5) {\proc{Enqueue}: 17, 3, 5};
+
+        \node[font=\small] at (-1.2,-4.2) {(c)}; \node at (-0.6,-4.2) {$Q$};
+        \fillarray{c}{0,-4.2}{3,5,,,,,15,6,9,8,4,17}{(\i<=2)||(\i>=8)}
+        \node[cell, text=gray] at (c7) {15};
+        \draw[<-, thick, orangec] (c3.south) -- ++(0,-0.35) node[below, font=\scriptsize] {$Q\at{tail}=3$};
+        \draw[<-, thick, hlb] (c8.south) -- ++(0,-0.35) node[below, font=\scriptsize] {$Q\at{head}=8$};
+        \node[font=\scriptsize, anchor=west] at (7.4,-3.6) {\proc{Dequeue} retorna 15};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% =====================================================================
+\section{Linked lists}
+% =====================================================================
+
+\begin{frame}{Linked lists (listas ligadas)}
+  \begin{itemize}
+    \item Objetos organizados em ordem linear determinada por \alert{ponteiros} em cada
+          objeto (e não por índices, como no array).
+    \item Lista \alert{duplamente ligada} $L$: cada elemento tem $key$, $next$ e $prev$.
+      \begin{itemize}
+        \item $x\at{prev}=\NIL$: $x$ é a \alert{cabeça} (\emph{head});
+              $x\at{next}=\NIL$: $x$ é a \alert{cauda} (\emph{tail}).
+        \item $L\at{head}$ aponta para o primeiro elemento; $L\at{head}=\NIL$: lista vazia.
+      \end{itemize}
+    \item Variações: simplesmente ou duplamente ligada; ordenada ou não; circular ou não.
+  \end{itemize}
+  \centering
+  \begin{tikzpicture}
+    \llnode{a1}{0,0}{9}\llnode{a2}{2,0}{16}\llnode{a3}{4,0}{4}\llnode{a4}{6,0}{1}
+    \lllink{a1}{a2}\lllink{a2}{a3}\lllink{a3}{a4}
+    \llnilprev{a1}\llnilnext{a4}
+    \node[left=6mm of a1] (lh) {$L\at{head}$};
+    \draw[ptr] (lh) -- (a1);
+    \node[font=\scriptsize, above=1mm of a1.north west, anchor=south] {$prev$};
+    \node[font=\scriptsize, above=1mm of a1.north, anchor=south] {$key$};
+    \node[font=\scriptsize, above=1mm of a1.north east, anchor=south] {$next$};
+    \node[font=\footnotesize, anchor=west] at (7,0) {conjunto $\{1,4,9,16\}$};
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Busca: \proc{List-Search}}
+  \begin{columns}[c]
+    \begin{column}{0.42\textwidth}
+      \begin{pseudo}[\small]{\proc{List-Search}$(L,k)$}
+        \li $x = L\at{head}$
+        \li \WHILE $x \neq \NIL$ \AND $x\at{key} \neq k$
+        \li[1] $x = x\at{next}$
+        \li \RETURN $x$
+      \end{pseudo}
+      \vspace{3mm}
+      \begin{itemize}\small
+        \item Busca linear pelo primeiro elemento com chave $k$.
+        \item Pior caso: $\Theta(n)$.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.56\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.85, transform shape]
+        \node[anchor=west, font=\small] at (-1.2,1.0) {\proc{List-Search}$(L,4)$:};
+        \llnode[visited]{a1}{0,0}{9}\llnode[visited]{a2}{1.8,0}{16}
+        \llnode[found]{a3}{3.6,0}{4}\llnode{a4}{5.4,0}{1}
+        \lllink{a1}{a2}\lllink{a2}{a3}\lllink{a3}{a4}
+        \llnilprev{a1}\llnilnext{a4}
+        \foreach \n/\t in {a1/1,a2/2,a3/3} {
+          \node[badge] at ($(\n.south)+(0,-0.3)$) {\t};
+        }
+        \node[font=\scriptsize, hlb, below=6mm of a3] {retorna $x$};
+        \node[anchor=west, font=\small] at (-1.2,-2.0) {\proc{List-Search}$(L,7)$:};
+        \llnode[visited]{b1}{0,-3.0}{9}\llnode[visited]{b2}{1.8,-3.0}{16}
+        \llnode[visited]{b3}{3.6,-3.0}{4}\llnode[visited]{b4}{5.4,-3.0}{1}
+        \lllink{b1}{b2}\lllink{b2}{b3}\lllink{b3}{b4}
+        \llnilprev{b1}\llnilnext{b4}
+        \node[font=\scriptsize, hlb, anchor=west] at (6.2,-3.0) {$x=\NIL$};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Inserção na cabeça: \proc{List-Prepend}}
+  \begin{columns}[c]
+    \begin{column}{0.38\textwidth}
+      \begin{pseudo}[\small]{\proc{List-Prepend}$(L,x)$}
+        \li $x\at{next} = L\at{head}$
+        \li $x\at{prev} = \NIL$
+        \li \IF $L\at{head} \neq \NIL$
+        \li[1] $L\at{head}\at{prev} = x$
+        \li $L\at{head} = x$
+      \end{pseudo}
+      \vspace{3mm}
+      {\small Adiciona $x$ (com $x\at{key}$ já definido) na frente da lista em $O(1)$.}
+    \end{column}
+    \begin{column}{0.6\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.8, transform shape]
+        \node[anchor=west, font=\small] at (-1.6,0.9) {antes ($x\at{key}=25$):};
+        \llnode[newn]{x}{-0.4,0}{25}
+        \node[above=0mm of x, font=\small] {$x$};
+        \llnode{a1}{2,0}{9}\llnode{a2}{3.8,0}{16}\llnode{a3}{5.6,0}{4}\llnode{a4}{7.4,0}{1}
+        \lllink{a1}{a2}\lllink{a2}{a3}\lllink{a3}{a4}\llnilprev{a1}\llnilnext{a4}
+        \node[above=4mm of a1] (lh) {$L\at{head}$}; \draw[ptr] (lh) -- (a1);
+
+        \node[anchor=west, font=\small] at (-1.6,-1.4) {depois:};
+        \llnode[newn]{b0}{0.2,-2.3}{25}\llnode{b1}{2,-2.3}{9}\llnode{b2}{3.8,-2.3}{16}
+        \llnode{b3}{5.6,-2.3}{4}\llnode{b4}{7.4,-2.3}{1}
+        \lllink[orangec]{b0}{b1}\lllink{b1}{b2}\lllink{b2}{b3}\lllink{b3}{b4}
+        \llnilprev{b0}\llnilnext{b4}
+        \node[left=5mm of b0, text=orangec] (lh2) {$L\at{head}$};
+        \draw[ptr, orangec] (lh2) -- (b0);
+      \end{tikzpicture}
+
+      {\scriptsize Ponteiros alterados em laranja.}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Inserção após um elemento: \proc{List-Insert}}
+  \begin{columns}[c]
+    \begin{column}{0.36\textwidth}
+      \begin{pseudo}[\small]{\proc{List-Insert}$(x,y)$}
+        \li $x\at{next} = y\at{next}$
+        \li $x\at{prev} = y$
+        \li \IF $y\at{next} \neq \NIL$
+        \li[1] $y\at{next}\at{prev} = x$
+        \li $y\at{next} = x$
+      \end{pseudo}
+      \vspace{3mm}
+      {\small ``Emenda'' $x$ logo após $y$ em $O(1)$. Não referencia a lista $L$.}
+    \end{column}
+    \begin{column}{0.62\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.75, transform shape]
+        \node[anchor=west, font=\small] at (-1.0,1.1) {antes ($x\at{key}=36$, $y$ aponta para 9):};
+        \llnode{a0}{0,0}{25}\llnode{a1}{1.9,0}{9}\llnode{a2}{3.8,0}{16}
+        \llnode{a3}{5.7,0}{4}\llnode{a4}{7.6,0}{1}
+        \lllink{a0}{a1}\lllink{a1}{a2}\lllink{a2}{a3}\lllink{a3}{a4}\llnilprev{a0}\llnilnext{a4}
+        \node[above=0mm of a1, font=\small] {$y$};
+        \llnode[newn]{x}{2.85,-1.1}{36}\node[left=0mm of x, font=\small] {$x$};
+
+        \node[anchor=west, font=\small] at (-1.0,-2.1) {depois:};
+        \llnode{b0}{0,-3.0}{25}\llnode{b1}{1.9,-3.0}{9}\llnode[newn]{bx}{3.8,-3.0}{36}
+        \llnode{b2}{5.7,-3.0}{16}\llnode{b3}{7.6,-3.0}{4}\llnode{b4}{9.5,-3.0}{1}
+        \lllink{b0}{b1}\lllink[orangec]{b1}{bx}\lllink[orangec]{bx}{b2}\lllink{b2}{b3}\lllink{b3}{b4}
+        \llnilprev{b0}\llnilnext{b4}
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Remoção: \proc{List-Delete}}
+  \begin{columns}[c]
+    \begin{column}{0.38\textwidth}
+      \begin{pseudo}[\small]{\proc{List-Delete}$(L,x)$}
+        \li \IF $x\at{prev} \neq \NIL$
+        \li[1] $x\at{prev}\at{next} = x\at{next}$
+        \li \ELSE $L\at{head} = x\at{next}$
+        \li \IF $x\at{next} \neq \NIL$
+        \li[1] $x\at{next}\at{prev} = x\at{prev}$
+      \end{pseudo}
+      \vspace{3mm}
+      \begin{itemize}\small
+        \item Recebe um \emph{ponteiro} para $x$: $O(1)$.
+        \item Remover por chave exige \proc{List-Search} antes: $\Theta(n)$.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.6\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.75, transform shape]
+        \node[anchor=west, font=\small] at (-1.0,1.1) {antes ($x$ aponta para 4):};
+        \llnode{a0}{0,0}{25}\llnode{a1}{1.9,0}{9}\llnode{a2}{3.8,0}{36}
+        \llnode{a3}{5.7,0}{16}\llnode[found]{a4}{7.6,0}{4}\llnode{a5}{9.5,0}{1}
+        \lllink{a0}{a1}\lllink{a1}{a2}\lllink{a2}{a3}\lllink{a3}{a4}\lllink{a4}{a5}
+        \llnilprev{a0}\llnilnext{a5}
+        \node[above=0mm of a4, font=\small] {$x$};
+
+        \node[anchor=west, font=\small] at (-1.0,-1.6) {depois:};
+        \llnode{b0}{0,-2.6}{25}\llnode{b1}{1.9,-2.6}{9}\llnode{b2}{3.8,-2.6}{36}
+        \llnode{b3}{5.7,-2.6}{16}\llnode{b5}{7.6,-2.6}{1}
+        \lllink{b0}{b1}\lllink{b1}{b2}\lllink{b2}{b3}\lllink[orangec]{b3}{b5}
+        \llnilprev{b0}\llnilnext{b5}
+        \llnode[delnode]{bx}{6.65,-3.8}{4}
+        \node[right=1mm of bx, font=\scriptsize, gray] {removido};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+  \vspace{2mm}
+  {\small Comparação: inserir/remover o primeiro elemento de um array custa $\Theta(n)$
+  (deslocamentos), contra $O(1)$ na lista duplamente ligada; já acessar o $k$-ésimo
+  elemento custa $O(1)$ no array e $\Theta(k)$ na lista.}
+\end{frame}
+
+\begin{frame}{Sentinelas}
+  \begin{columns}[c]
+    \begin{column}{0.5\textwidth}
+      \begin{itemize}
+        \item Uma \alert{sentinela} ($L$) é um objeto fictício que remove a necessidade das condicionais do \proc{List-Insert} e \proc{List-Delete}
+        \item $L\at{nil}$ representa \NIL, mas tem todos os atributos dos demais objetos.
+        \item A lista se torna \alert{circular, duplamente ligada, com sentinela}:
+          \begin{itemize}
+            \item $L\at{nil}\at{next}$ aponta para a cabeça;
+            \item $L\at{nil}\at{prev}$ aponta para a cauda;
+            \item $L\at{head}$ deixa de ser necessário.
+          \end{itemize}
+        \item Lista vazia: só a sentinela, apontando para si mesma.
+        % \item Sentinelas raramente melhoram o tempo assintótico; podem desperdiçar memória
+        %       com muitas listas pequenas.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.72, transform shape]
+        \node[font=\small] at (-1.6,0) {(a)};
+        \llnode[sentinel]{s0}{0,0}{}
+        \node[below=6mm of s0, font=\small] {$L\at{nil}$};
+        \sentwrap{s0}{s0}
+        \node[font=\small] at (-1.6,-2.6) {(b)};
+        \llnode[sentinel]{s1}{0,-2.6}{}
+        \llnode{c1}{1.8,-2.6}{9}\llnode{c2}{3.6,-2.6}{16}\llnode{c3}{5.4,-2.6}{4}\llnode{c4}{7.2,-2.6}{1}
+        \lllink{s1}{c1}\lllink{c1}{c2}\lllink{c2}{c3}\lllink{c3}{c4}
+        \sentwrap{s1}{c4}
+        \node[below=6mm of s1, font=\small] {$L\at{nil}$};
+      \end{tikzpicture}
+
+      {\scriptsize (a) lista vazia; (b) a lista $\langle 9,16,4,1\rangle$ com sentinela (azul).}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Remoção e inserção com sentinela}
+  \begin{columns}[c]
+    \begin{column}{0.36\textwidth}
+      \begin{pseudo}[\small]{\proc{List-Delete}$'(x)$}
+        \li $x\at{prev}\at{next} = x\at{next}$
+        \li $x\at{next}\at{prev} = x\at{prev}$
+      \end{pseudo}
+
+      \vspace{5mm}
+      \begin{pseudo}[\small]{\proc{List-Insert}$'(x,y)$}
+        \li $x\at{next} = y\at{next}$
+        \li $x\at{prev} = y$
+        \li $y\at{next}\at{prev} = x$
+        \li $y\at{next} = x$
+      \end{pseudo}
+
+      \vspace{3mm}
+      {\small Inserir na cabeça: $y=L\at{nil}$; na cauda: $y=L\at{nil}\at{prev}$.
+      Nunca remova a sentinela!}
+    \end{column}
+    \begin{column}{0.62\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.72, transform shape]
+        \node[anchor=west, font=\small] at (-1.2,1.3) {\proc{List-Delete}$'(x)$, $x$ aponta para 1:};
+        \llnode[sentinel]{s1}{0,0}{}
+        \llnode{c0}{1.8,0}{25}\llnode{c1}{3.6,0}{9}\llnode{c2}{5.4,0}{16}\llnode{c3}{7.2,0}{4}
+        \lllink{s1}{c0}\lllink{c0}{c1}\lllink{c1}{c2}\lllink{c2}{c3}
+        \sentwrap{s1}{c3}
+        \llnode[delnode]{cx}{9.2,0}{1}
+        \node[above=0mm of cx, font=\scriptsize, gray] {removido};
+
+        \node[anchor=west, font=\small] at (-1.2,-1.6) {\proc{List-Insert}$'(x,y)$, $x\at{key}=36$, $y$ aponta para 9:};
+        \llnode[sentinel]{s2}{0,-2.9}{}
+        \llnode{d0}{1.8,-2.9}{25}\llnode{d1}{3.6,-2.9}{9}\llnode[newn]{dx}{5.4,-2.9}{36}
+        \llnode{d2}{7.2,-2.9}{16}\llnode{d3}{9.0,-2.9}{4}
+        \lllink{s2}{d0}\lllink{d0}{d1}\lllink[orangec]{d1}{dx}\lllink[orangec]{dx}{d2}\lllink{d2}{d3}
+        \sentwrap{s2}{d3}
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Busca com sentinela: \proc{List-Search}$'$}
+  \begin{columns}[c]
+    \begin{column}{0.5\textwidth}
+      \begin{pseudo}[\footnotesize]{\proc{List-Search}$'(L,k)$}
+        \li $L\at{nil}\at{key} = k$ \Cm{store the key in the sentinel}
+        \li $x = L\at{nil}\at{next}$ \Cm{start at the head of the list}
+        \li \WHILE $x\at{key} \neq k$
+        \li[1] $x = x\at{next}$
+        \li \IF $x \eqq L\at{nil}$ \Cm{found $k$ in the sentinel}
+        \li[1] \RETURN \NIL \Cm{$k$ was not really in the list}
+        \li \ELSE \RETURN $x$ \Cm{found $k$ in element $x$}
+      \end{pseudo}
+      \vspace{2mm}
+      \begin{itemize}\small
+        \item A chave é \alert{garantidamente} encontrada (na lista ou na sentinela):
+              uma comparação a menos por iteração.
+        \item Mesmo tempo assintótico, constante menor.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.72, transform shape]
+        \node[anchor=west, font=\small] at (-1.0,1.3) {\proc{List-Search}$'(L,4)$:};
+        \llnode[found]{s1}{0,0}{4}
+        \llnode[visited]{c1}{1.8,0}{9}\llnode[visited]{c2}{3.6,0}{16}\llnode[found]{c3}{5.4,0}{4}\llnode{c4}{7.2,0}{1}
+        \lllink{s1}{c1}\lllink{c1}{c2}\lllink{c2}{c3}\lllink{c3}{c4}
+        \sentwrap{s1}{c4}
+        \node[below=6mm of s1, font=\scriptsize] {$L\at{nil}$};
+        \node[below=6mm of c3, font=\scriptsize, hlb] {retorna $x$};
+
+        \node[anchor=west, font=\small] at (-1.0,-1.9) {\proc{List-Search}$'(L,7)$:};
+        \llnode[found]{s2}{0,-3.2}{7}
+        \llnode[visited]{e1}{1.8,-3.2}{9}\llnode[visited]{e2}{3.6,-3.2}{16}\llnode[visited]{e3}{5.4,-3.2}{4}\llnode[visited]{e4}{7.2,-3.2}{1}
+        \lllink{s2}{e1}\lllink{e1}{e2}\lllink{e2}{e3}\lllink{e3}{e4}
+        \sentwrap[hlb]{s2}{e4}
+        \node[below=6mm of s2, font=\scriptsize, hlb] {$x=L\at{nil}$ $\Rightarrow$ \NIL};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% =====================================================================
+\section{Representação de árvores enraizadas}
+% =====================================================================
+
+\begin{frame}{Árvores binárias}
+  \begin{columns}[c]
+    \begin{column}{0.42\textwidth}
+      \begin{itemize}
+        \item Cada nó é um objeto com $key$ e ponteiros:
+          \begin{itemize}
+            \item $p$: pai;
+            \item $left$: filho esquerdo;
+            \item $right$: filho direito.
+          \end{itemize}
+        \item $x\at{p}=\NIL$: $x$ é a raiz.
+        \item $x\at{left}=x\at{right}=\NIL$: $x$ é uma folha.
+        % \item Filho ausente: ponteiro \NIL.
+        \item $T\at{root}$ aponta para a raiz; $T\at{root}=\NIL$: árvore vazia.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.56\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.95, transform shape]
+        \tnode{r}{0,0}
+        \tnode{a}{-2,-1.3}\tnode{b}{2,-1.3}
+        \tnode{c}{-3,-2.6}\tnode{d}{-1,-2.6}\tnode{e}{1.2,-2.6}
+        \tnode{f}{-1.6,-3.9}\tnode{g}{-0.4,-3.9}
+        \node[above=4mm of r-top] (tr) {$T\at{root}$}; \draw[ptr] (tr) -- (r-top);
+        \nilp{r}
+        \foreach \P/\C in {r/a,a/c,d/f,b/e} { \draw[ptrdot] (\P-l) -- (\C-top); }
+        \foreach \P/\C in {r/b,a/d,d/g} { \draw[ptrdot] (\P-r) -- (\C-top); }
+        \foreach \P/\C in {r/a,r/b,a/c,a/d,b/e,d/f,d/g} {
+          \draw[ptrdot, gray] (\C-p) -- ($(\P-bot)+(0,0.02)$);
+        }
+        \nilr{b}
+        \foreach \n in {c,e,f,g} { \nill{\n}\nilr{\n} }
+        \node[font=\scriptsize, align=left, anchor=west] at (1.6,-0.1) {cada nó:\\ topo: $p$\\ baixo: $left$ | $right$};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% \begin{frame}{Árvores com ramificação ilimitada}
+%   \begin{columns}[c]
+%     \begin{column}{0.44\textwidth}
+%       \begin{itemize}
+%         \item Com no máximo $k$ filhos: $child_1, \dots, child_k$. Mas se o número de filhos é
+%               ilimitado (ou $k$ grande e pouco usado), desperdiça-se memória.
+%         \item Representação \alert{left-child, right-sibling}, $O(n)$ de espaço:
+%           \begin{enumerate}
+%             \item $x\at{left\mbox{-}child}$: filho mais à esquerda de $x$;
+%             \item $x\at{right\mbox{-}sibling}$: irmão imediatamente à direita.
+%           \end{enumerate}
+%         \item Outras representações: heaps (array), só ponteiros para o pai, \dots
+%       \end{itemize}
+%     \end{column}
+%     \begin{column}{0.54\textwidth}
+%       \centering
+%       \begin{tikzpicture}[scale=0.95, transform shape]
+%         \tnode{r}{0,0}
+%         \tnode{a}{-2.2,-1.4}\tnode{b}{0,-1.4}\tnode{c}{2.2,-1.4}
+%         \tnode{d}{-2.8,-2.8}\tnode{e}{-1.6,-2.8}
+%         \tnode{f}{1.6,-2.8}\tnode{g}{2.8,-2.8}
+%         \node[above=4mm of r-top] (tr) {$T\at{root}$}; \draw[ptr] (tr) -- (r-top);
+%         \nilp{r}\nilr{r}
+%         \foreach \P/\C in {r/a,a/d,c/f} { \draw[ptrdot] (\P-l) -- (\C-top); }
+%         \foreach \A/\Bn in {a/b,b/c,d/e,f/g} { \draw[ptrdot] (\A-r) -- (\Bn-w); }
+%         \foreach \P/\C in {r/a,r/b,r/c,a/d,a/e,c/f,c/g} {
+%           \draw[ptrdot, gray] (\C-p) -- ($(\P-bot)+(0,0.02)$);
+%         }
+%         \nill{b}\nilr{c}\nilr{e}\nilr{g}
+%         \foreach \n in {d,e,f,g} { \nill{\n} }
+%         \node[font=\scriptsize, align=left, anchor=west] at (0.8,0.1) {topo: $p$\\ baixo: $left\mbox{-}child$ | $right\mbox{-}sibling$};
+%       \end{tikzpicture}
+%     \end{column}
+%   \end{columns}
+% \end{frame}
+
+% =====================================================================
+\section{Hash tables}
+% =====================================================================
+
+% \begin{frame}{Hash tables: motivação}
+%   \begin{itemize}
+%     \item Muitas aplicações só precisam das operações de dicionário:
+%           \proc{Insert}, \proc{Search} e \proc{Delete}
+%           (ex.: tabela de símbolos de um compilador).
+%     \item Uma \alert{hash table} é uma estrutura eficaz para dicionários:
+%       \begin{itemize}
+%         \item pior caso da busca: $\Theta(n)$ (como numa lista ligada);
+%         \item na prática, e sob hipóteses razoáveis, tempo médio $O(1)$.
+%       \end{itemize}
+%     \item Generaliza o array comum: em vez de usar a chave como índice, o índice é
+%           \alert{calculado} a partir da chave.
+%     \item Os dicionários embutidos do Python são implementados com hash tables.
+%   \end{itemize}
+%   \vspace{2mm}
+%   \begin{block}{Roteiro do Capítulo 11}
+%     endereçamento direto $\to$ hash tables com encadeamento $\to$ funções hash
+%     $\to$ endereçamento aberto.
+%   \end{block}
+% \end{frame}
+
+\begin{frame}{Tabelas de endereçamento direto}
+  \begin{columns}[c]
+    \begin{column}{0.4\textwidth}
+      \begin{itemize}
+        \item Considere um conjunto universo $U=\{0,1,\dots,m-1\}$ de chaves.
+        \item Tabela de endereçamento direto $T[0:m-1]$ mapeia cada posição corresponde a uma chave de $U$.
+        \item Desvantagem: as chaves $k \in U$ precisam existir na memória, mesmo que elas nunca sejam utilizadas na sua aplicação
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.58\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.82, transform shape]
+        \draw[thick, fill=tanc!30] (0,0) ellipse (2.1cm and 1.9cm);
+        \draw[thick, fill=tanc] (0.25,-0.55) ellipse (1.15cm and 0.85cm);
+        \node[font=\scriptsize, align=center] at (-0.6,2.25) {$U$ (universo de chaves)};
+        \node[font=\scriptsize, align=center] at (-1.0,-1.25) {$K$ (chaves\\ reais)};
+        \foreach \k/\x/\y in {0/-1.1/1.1, 6/0.3/1.3, 9/-1.6/0.3, 7/1.2/0.8, 4/-0.4/0.6, 1/-1.6/-0.5} {
+          \node[font=\small] (u\k) at (\x,\y) {\k};
+        }
+        \foreach \k/\x/\y in {2/-0.3/-0.3, 3/0.7/-0.25, 5/-0.15/-1.0, 8/0.85/-0.95} {
+          \node[font=\small] (u\k) at (\x,\y) {\k};
+        }
+        \foreach \j in {0,...,9} {
+          \ifnum\j=2 \def\fc{white}\else\ifnum\j=3 \def\fc{white}\else\ifnum\j=5 \def\fc{white}\else\ifnum\j=8 \def\fc{white}\else\def\fc{nilb}\fi\fi\fi\fi
+          \node[draw, thick, fill=\fc, minimum width=6mm, minimum height=4.6mm, inner sep=0pt] (T\j) at (3.6,2.2-\j*0.46) {};
+          \node[idx, text=black, anchor=east] at ($(T\j.west)+(-0.08,0)$) {\j};
+        }
+        \node[above=1mm of T0, font=\small] {$T$};
+        \foreach \j in {2,3,5,8} {
+          \node[rectangle split, rectangle split horizontal, rectangle split parts=2, draw, thick,
+                font=\scriptsize, inner sep=1.5pt, rectangle split part fill={tanc,white},
+                minimum height=4mm] (E\j) at (6.0,2.2-\j*0.46)
+                {\makebox[7mm]{\j}\nodepart{two}\makebox[7mm]{}};
+          \draw[ptrdot] (T\j.center) -- (E\j.west);
+          \draw[->] (u\j) -- (T\j.west);
+        }
+        \draw[decorate, decoration={brace, amplitude=3pt, raise=1pt}]
+          (E2.north west) -- (E2.one split north)
+          node[midway, above=3pt, font=\scriptsize] {chave};
+        \draw[decorate, decoration={brace, amplitude=3pt, raise=1pt}]
+          (E2.one split north) -- (E2.north east)
+          node[midway, above=3pt, font=\scriptsize] {valor};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Endereçamento direto: operações}
+  \begin{columns}[c]
+    \begin{column}{0.44\textwidth}
+      \begin{pseudo}[\small]{\proc{Direct-Address-Search}$(T,k)$}
+        \li \RETURN $T[k]$
+      \end{pseudo}
+      \vspace{3mm}
+      \begin{pseudo}[\small]{\proc{Direct-Address-Insert}$(T,x)$}
+        \li $T[x\at{key}] = x$
+      \end{pseudo}
+      \vspace{3mm}
+      \begin{pseudo}[\small]{\proc{Direct-Address-Delete}$(T,x)$}
+        \li $T[x\at{key}] = \NIL$
+      \end{pseudo}
+      \vspace{3mm}
+      {\small Cada operação: $O(1)$ no pior caso.}
+    \end{column}
+    \begin{column}{0.54\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.8, transform shape]
+        \tikzset{el/.style={draw, thick, fill=tanc, minimum width=6mm, minimum height=5mm, font=\small}}
+        % estado inicial
+        \node[font=\scriptsize, anchor=west] at (-1.0,0.8) {estado inicial: elementos com chaves 1 e 3};
+        \foreach \j in {0,...,5} {
+          \pgfmathtruncatemacro{\oc}{(\j==1)||(\j==3)}
+          \ifnum\oc=1 \def\fc{white}\else\def\fc{nilb}\fi
+          \node[cell, fill=\fc] (A\j) at (\j*0.6,0) {};
+          \node[idx, text=black] at ($(A\j.north)+(0,0.17)$) {\j};
+        }
+        \node[left=1mm of A0] {$T$};
+        \node[el] (a1) at (0.6,-1.0) {1}; \draw[ptrdot] (A1.center) -- (a1);
+        \node[el, fill=hlb!80, text=white] (a3) at (1.8,-1.0) {3}; \draw[ptrdot] (A3.center) -- (a3);
+        \node[font=\scriptsize, hlb, anchor=west] at (3.8,-0.8) {\proc{Search}$(T,3)$:};
+        \node[font=\scriptsize, hlb, anchor=west] at (3.8,-1.2) {retorna $T[3]$};
+        \draw[->, hlb, thick] (3.7,-1.0) -- (a3.east);
+        % após insert
+        \node[font=\scriptsize, anchor=west] at (-1.0,-2.0) {após \proc{Insert}$(T,x)$ com $x\at{key}=4$:};
+        \foreach \j in {0,...,5} {
+          \pgfmathtruncatemacro{\oc}{(\j==2)||(\j==4)}
+          \ifnum\oc=1 \def\fc{white}\else\def\fc{nilb}\fi
+          \node[cell, fill=\fc] (B\j) at (\j*0.6,-2.8) {};
+          \node[idx, text=black] at ($(B\j.north)+(0,0.17)$) {\j};
+        }
+        \node[left=1mm of B0] {$T$};
+        \node[el] (b2) at (1.2,-3.8) {2}; \draw[ptrdot] (B2.center) -- (b2);
+        \node[el, fill=orangec!70] (b4) at (2.4,-3.8) {4}; \draw[ptrdot, orangec] (B4.center) -- (b4);
+        % após delete
+        \node[font=\scriptsize, anchor=west] at (-1.0,-4.8) {após \proc{Delete}$(T,y)$ com $y\at{key}=1$:};
+        \foreach \j in {0,...,5} {
+          \ifnum\j=3 \def\fc{white}\else\def\fc{nilb}\fi
+          \node[cell, fill=\fc] (C\j) at (\j*0.6,-5.6) {};
+          \node[idx, text=black] at ($(C\j.north)+(0,0.17)$) {\j};
+        }
+        \node[left=1mm of C0] {$T$};
+        \node[cell, fill=orangec!60] at (C1) {\tiny\NIL};
+        \node[el] (c3) at (1.8,-6.6) {3}; \draw[ptrdot] (C3.center) -- (c3);
+        % \node[font=\scriptsize, anchor=west] at (3.6,-3.8) {$x$ inserido};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Hash tables e funções hash}
+  \begin{columns}[c]
+    \begin{column}{0.5\textwidth}
+      \begin{itemize}
+        \item Se $U$ é grande, uma tabela de tamanho $|U|$ é impraticável;
+              e o conjunto $K$ de chaves armazenadas é muito menor que $U$.
+        \item Uma \alert{função hash} calcula o slot a partir da chave:
+              \[ h : U \to \{0,1,\dots,m-1\},\qquad m \ll |U| . \]
+        \item O elemento de chave $k$ vai para o slot $h(k)$ (\emph{valor hash} de $k$).
+        \item Armazenamento: $\Theta(|K|)$, busca em $O(1)$ \alert{em média}.
+        \item \alert{Colisão}: duas chaves com o mesmo valor hash. Como $|U|>m$,
+              colisões são inevitáveis.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.85, transform shape]
+        \draw[thick, fill=tanc!30] (0,0) ellipse (1.9cm and 1.8cm);
+        \draw[thick, fill=tanc] (0.1,-0.4) ellipse (1.2cm and 1.0cm);
+        \node[font=\scriptsize] at (-0.5,2.1) {$U$ (universo de chaves)};
+        \node[font=\scriptsize, align=center] at (-1.25,-1.35) {$K$\\(chaves reais)};
+        \node (k1) at (-0.5,0.2) {$k_1$};
+        \node (k4) at (0.5,0.25) {$k_4$};
+        \node (k5) at (0.1,-0.35) {$k_5$};
+        \node (k2) at (-0.3,-0.75) {$k_2$};
+        \node (k3) at (0.5,-1.1) {$k_3$};
+        \foreach \j in {0,...,7} {
+          \node[draw, thick, minimum width=6mm, minimum height=4.6mm, inner sep=0pt] (T\j) at (3.3,1.6-\j*0.46) {};
+        }
+        \node[above=1mm of T0] {$T$};
+        \node[idx, right=1mm of T0] {0};
+        \node[idx, right=1mm of T7] {$m-1$};
+        \draw[->, thick] (k1) -- (T1.west);
+        \draw[->, thick] (k4) -- (T2.west);
+        \draw[->, thick, rbred] (k2) -- (T4.west);
+        \draw[->, thick, rbred] (k5) -- (T4.west);
+        \draw[->, thick] (k3) -- (T6.west);
+        \node[font=\scriptsize, right=1mm of T1] {$h(k_1)$};
+        \node[font=\scriptsize, right=1mm of T2] {$h(k_4)$};
+        \node[font=\scriptsize, right=1mm of T4, text=black] {$h(k_2)=h(k_5)$};
+        \node[font=\scriptsize, right=1mm of T6] {$h(k_3)$};
+      \end{tikzpicture}
+
+      {\scriptsize para $h(k)=k \bmod m$, $k_2$ e $k_5$ colidem}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Encadeamento}
+  \begin{columns}[c]
+    \begin{column}{0.46\textwidth}
+      \begin{itemize}\small
+        % \item Função hash ``ideal'': para cada $k$, $h(k)$ é escolhido de forma
+        %       \alert{aleatória, uniforme e independente} em $\{0,\dots,m-1\}$
+        %       (e fixado nas chamadas seguintes): \alert{hashing uniforme independente}
+        %       (\emph{random oracle}). É uma abstração teórica.
+        \item O encadeamento (\textit{chaining}) é uma forma de lidar com colisões
+        \item Cada slot $T[j]$ aponta para uma
+              lista ligada com todos os elementos cujo valor hash é $j$
+              ($\NIL$ se não houver).
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.52\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.72, transform shape]
+        \foreach \j in {0,...,7} {
+          \pgfmathtruncatemacro{\oc}{(\j==1)||(\j==3)||(\j==5)||(\j==6)}
+          \ifnum\oc=1 \def\fc{white}\else\def\fc{nilb}\fi
+          \node[draw, thick, fill=\fc, minimum width=7mm, minimum height=7mm, inner sep=0pt] (T\j) at (0,-\j*0.7) {};
+          \node[idx, text=black] at ($(T\j.west)+(-0.2,0)$) {\j};
+        }
+        \node[above=1mm of T0] {$T$};
+        \llnode{a1}{1.6,-0.7}{$k_1$}\llnode{a2}{3.4,-0.7}{$k_4$}
+        \lllink{a1}{a2}\llnilprev{a1}\llnilnext{a2}
+        \llnode{b1}{1.6,-2.1}{$k_5$}\llnode{b2}{3.4,-2.1}{$k_2$}\llnode{b3}{5.2,-2.1}{$k_7$}
+        \lllink{b1}{b2}\lllink{b2}{b3}\llnilprev{b1}\llnilnext{b3}
+        \llnode{c1}{1.6,-3.5}{$k_3$}\llnilprev{c1}\llnilnext{c1}
+        \llnode{d1}{1.6,-4.2}{$k_8$}\llnode{d2}{3.4,-4.2}{$k_6$}
+        \lllink{d1}{d2}\llnilprev{d1}\llnilnext{d2}
+        \foreach \j/\n in {1/a1,3/b1,5/c1,6/d1} { \draw[ptrdot] (T\j.center) -- (\n.west); }
+      \end{tikzpicture}
+
+      {\scriptsize $h(k_1)=h(k_4)=1$}\\
+      {\scriptsize $h(k_5)=h(k_2)=h(k_7)=3$}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Operações com encadeamento}
+  \begin{columns}[c]
+    \begin{column}{0.44\textwidth}
+      \begin{pseudo}[\small]{\proc{Chained-Hash-Insert}$(T,x)$}
+        \li \proc{List-Prepend}$(T[h(x\at{key})],x)$
+      \end{pseudo}
+      \vspace{2mm}
+      \begin{pseudo}[\small]{\proc{Chained-Hash-Search}$(T,k)$}
+        \li \RETURN \proc{List-Search}$(T[h(k)],k)$
+      \end{pseudo}
+      \vspace{2mm}
+      \begin{pseudo}[\small]{\proc{Chained-Hash-Delete}$(T,x)$}
+        \li \proc{List-Delete}$(T[h(x\at{key})],x)$
+      \end{pseudo}
+      \vspace{2mm}
+      \begin{itemize}\footnotesize
+        \item Insert: $O(1)$ no pior caso (supõe $x$ ausente).
+        \item Search: proporcional ao tamanho da lista.
+        \item Delete: $O(1)$ com listas duplamente ligadas.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.54\textwidth}
+      \centering
+      {\scriptsize $m=7$, $h(k)=k \bmod 7$, após inserir 15, 22, 12, 10, 3:}\\[1mm]
+      \begin{tikzpicture}[scale=0.72, transform shape]
+        \foreach \j in {0,...,6} {
+          \pgfmathtruncatemacro{\oc}{(\j==1)||(\j==3)}
+          \ifnum\oc=1 \def\fc{white}\else\def\fc{nilb}\fi
+          \node[draw, thick, fill=\fc, minimum width=7mm, minimum height=7mm, inner sep=0pt] (T\j) at (0,-\j*0.75) {};
+          \node[idx, text=black] at ($(T\j.west)+(-0.2,0)$) {\j};
+        }
+        \node[above=1mm of T0] {$T$};
+        % slot 1: insert 8
+        \llnode[newn]{a0}{1.6,-0.75}{8}\llnode{a1}{3.4,-0.75}{22}\llnode{a2}{5.2,-0.75}{15}
+        \lllink[orangec]{a0}{a1}\lllink{a1}{a2}\llnilprev{a0}\llnilnext{a2}
+        \draw[ptrdot, orangec] (T1.center) -- (a0.west);
+        \node[font=\small, text=orangec, anchor=west] at (6.0,-0.75) {\proc{Insert} 8};
+        % slot 3: search 10
+        \llnode[visited]{b1}{1.6,-2.25}{3}\llnode[found]{b2}{3.4,-2.25}{10}
+        \lllink{b1}{b2}\llnilprev{b1}\llnilnext{b2}
+        \draw[ptrdot] (T3.center) -- (b1.west);
+        \node[font=\small, text=hlb, anchor=west] at (4.2,-2.25) {\proc{Search} 10};
+        % slot 5: delete 12
+        \llnode[delnode]{c1}{1.6,-3.75}{12}
+        \node[cell, fill=orangec!60, minimum width=7mm, minimum height=7mm] at (T5) {\tiny\NIL};
+        \node[font=\small, text=orangec, anchor=west] at (2.4,-3.75) {\proc{Delete} 12};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Análise do encadeamento}
+  \setbeamercolor{block title alerted}{fg=white, bg=rbred}
+  \setbeamercolor{block body alerted}{fg=black, bg=rbred!10}
+  \begin{alertblock}{Pior caso}
+    Todas as $n$ chaves no mesmo slot: busca $\Theta(n)$, em que $n$ número de elementos armazenados
+  \end{alertblock}
+  \begin{block}{Caso médio}
+    Seja $\alpha= n/m$ (fator de carga). Se a função hash espalha bem as chaves, cada lista tem, em média, $\alpha$ elementos.
+    Buscar uma chave custa: $1$ (calcular o hash e ir ao slot) $+\ \alpha$ (percorrer a lista).
+    \begin{itemize}
+      \item busca \emph{sem sucesso}: percorre a lista inteira $\Rightarrow \Theta(1+\alpha)$;
+      \item busca \emph{com sucesso}: para no meio da lista, em média $\Rightarrow$ também $\Theta(1+\alpha)$.
+    \end{itemize}
+    Se $n = O(m)$, então $\alpha = O(1)$: \alert{todas as operações de dicionário
+    em $O(1)$ em média}.
+  \end{block}
+\end{frame}
+
+% \begin{frame}{Funções hash: o que faz uma boa função?}
+%   \begin{itemize}
+%     \item Uma boa função hash satisfaz (aproximadamente) o hashing uniforme independente.
+%     \item Raramente se conhece a distribuição das chaves. Exceção: se $k$ é real,
+%           uniforme e independente em $[0,1)$, então $h(k)=\lfloor km\rfloor$ é ideal.
+%     \item Duas abordagens:
+%       \begin{itemize}
+%         \item \alert{Hashing estático}: uma única função fixa (método da divisão,
+%               da multiplicação) --- tenta ser independente de padrões nos dados.
+%         \item \alert{Hashing aleatório}: escolhe-se a função aleatoriamente de uma família
+%               adequada, em tempo de execução, independentemente dos dados.
+%               \textbf{Recomendado}.
+%       \end{itemize}
+%     \item Chaves típicas: inteiros não negativos curtos (cabem em uma palavra de $w$ bits,
+%           $w=32$ ou 64) ou vetores curtos/strings de bytes.
+%   \end{itemize}
+% \end{frame}
+
+\begin{frame}{Hashing estático: divisão e multiplicação}
+  \begin{block}{Método da divisão}
+    \[ h(k) = k \bmod m . \]
+    Ex.: $m=12$, $k=100 \Rightarrow h(k)=4$. Rápido (uma divisão). Funciona bem se $m$
+    é primo não muito próximo de uma potência de 2 --- mas sem garantias.
+  \end{block}
+  \begin{block}{Método da multiplicação}
+    \[ h(k) = \lfloor m\,(kA \bmod 1) \rfloor, \qquad 0<A<1, \]
+    em que $kA \bmod 1 = kA - \lfloor kA\rfloor$ é a parte fracionária de $kA$.
+    O valor de $m$ não é crítico.
+  \end{block}
+\end{frame}
+
+% \begin{frame}{Método multiply-shift}
+%   \begin{columns}[c]
+%     \begin{column}{0.5\textwidth}
+%       \begin{itemize}\small
+%         \item Caso especial com $m=2^\ell$, $\ell \le w$, e $a = A\cdot 2^w$ inteiro de $w$ bits:
+%           \[ h_a(k) = (ka \bmod 2^w) \gg (w-\ell) . \]
+%         \item $ka = r_1 2^w + r_0$; o hash são os $\ell$ bits mais significativos
+%               de $r_0$.
+%         \item Três instruções: multiplicação, subtração e deslocamento lógico.
+%         \item Ex.: $k=123456$, $\ell=14$, $w=32$, $a=2654435769$ (sugestão de Knuth):
+%               $ka = 76300\cdot 2^{32} + 17612864$, logo $h_a(k)=67$.
+%       \end{itemize}
+%     \end{column}
+%     \begin{column}{0.48\textwidth}
+%       \centering
+%       \begin{tikzpicture}[scale=0.9, transform shape]
+%         \draw[thick, fill=tanc] (3,0) rectangle (6,0.5); \node at (4.5,0.25) {$k$};
+%         \draw[thick, fill=nilb] (3,-0.7) rectangle (6,-0.2); \node at (4.5,-0.45) {$a = A\cdot 2^w$};
+%         \node at (2.6,-0.45) {$\times$};
+%         \draw[decorate, decoration={brace, amplitude=4pt}] (3,0.6) -- (6,0.6) node[midway, above=3pt, font=\scriptsize] {$w$ bits};
+%         \draw[thick] (0,-0.9) -- (6,-0.9);
+%         \draw[thick, fill=gray!15] (0,-1.6) rectangle (3,-1.1); \node at (1.5,-1.35) {$r_1$};
+%         \draw[thick] (3,-1.6) rectangle (6,-1.1); \node at (4.9,-1.35) {$r_0$};
+%         \draw[thick, fill=orangec!70] (3,-1.6) rectangle (4.2,-1.1);
+%         \draw[decorate, decoration={brace, amplitude=4pt, mirror}] (3,-1.7) -- (4.2,-1.7)
+%           node[midway, below=3pt, font=\scriptsize] {extrair $\ell$ bits};
+%         \draw[->, thick] (3.6,-2.2) -- (3.6,-2.6);
+%         \draw[thick, fill=orangec!70] (3,-3.1) rectangle (4.2,-2.6); \node at (3.6,-2.85) {\small $h_a(k)$};
+%         \node[font=\scriptsize, gray] at (1.5,-1.85) {descartado};
+%       \end{tikzpicture}
+%     \end{column}
+%   \end{columns}
+% \end{frame}
+
+% \begin{frame}{Hashing aleatório e universal}
+%   \begin{itemize}\small
+%     \item Com uma função fixa, um adversário pode escolher $n$ chaves que vão todas ao
+%           mesmo slot: $\Theta(n)$ por busca. Solução: \alert{escolher $h$ aleatoriamente}
+%           no início da execução, independentemente das chaves.
+%     \item Família finita $\mathcal{H}$ de funções $U \to \{0,\dots,m-1\}$ é
+%           \alert{universal} se, para todo par de chaves distintas $k_1,k_2$, o número
+%           de $h\in\mathcal{H}$ com $h(k_1)=h(k_2)$ é no máximo $|\mathcal{H}|/m$
+%           (probabilidade de colisão $\le 1/m$).
+%     \item Propriedades de uma família $\mathcal{H}$ (com $h$ sorteada uniformemente):
+%       \begin{itemize}\footnotesize
+%         \item \emph{uniforme}: $\Pr\{h(k)=q\}=1/m$;
+%         \item \emph{universal}: $\Pr\{h(k_1)=h(k_2)\}\le 1/m$;
+%         \item \emph{$\epsilon$-universal}: $\Pr\{h(k_1)=h(k_2)\}\le \epsilon$;
+%         \item \emph{$d$-independente}: $\Pr\{h(k_i)=q_i,\ i=1,\dots,d\}=1/m^d$.
+%       \end{itemize}
+%     \item Com hashing universal e encadeamento, qualquer sequência de $s$ operações
+%           com $n=O(m)$ inserções custa $\Theta(s)$ em valor esperado.
+%   \end{itemize}
+% \end{frame}
+
+% \begin{frame}{Projetando famílias universais}
+%   \begin{block}{Baseada em teoria dos números}
+%     \small Escolha um primo $p$ tal que toda chave esteja em $\mathbb{Z}_p=\{0,\dots,p-1\}$
+%     ($p>m$). Para $a\in\mathbb{Z}_p^*=\{1,\dots,p-1\}$ e $b\in\mathbb{Z}_p$:
+%     \[ h_{ab}(k) = ((ak+b) \bmod p) \bmod m, \qquad
+%        \mathcal{H}_{pm} = \{h_{ab} : a\in\mathbb{Z}_p^*,\ b\in\mathbb{Z}_p\}. \]
+%     Ex.: $p=17$, $m=6$: $h_{3,4}(8) = ((3\cdot 8+4)\bmod 17)\bmod 6 = 11 \bmod 6 = 5$.
+%     A família tem $p(p-1)$ funções e é universal; $m$ não precisa ser primo.
+%   \end{block}
+%   \begin{block}{Baseada em multiply-shift (recomendada na prática)}
+%     \small $\mathcal{H} = \{h_a : a \text{ ímpar},\ 1\le a<m,\ h_a \text{ dada pelo multiply-shift}\}$
+%     é $2/m$-universal; muito rápida.
+%   \end{block}
+%   \begin{block}{Entradas longas (vetores, strings)}
+%     \small Funções hash criptográficas, p.\,ex.\ $h(k)=\text{SHA-256}(k)\bmod m$; família com
+%     ``sal'': $h_a(k) = \text{SHA-256}(a\,\|\,k)\bmod m$.
+%   \end{block}
+% \end{frame}
+
+\begin{frame}{Endereçamento aberto (\emph{open addressing})}
+  \begin{itemize}
+    \item Todos os elementos ficam \alert{na própria tabela}: cada slot contém um
+          elemento ou \NIL. Sem listas, sem ponteiros $\Rightarrow$ $\alpha \le 1$.
+    \item Para inserir, \alert{sondamos} (\emph{probe}) a tabela até achar um slot vazio.
+          A sequência de sondagem depende da chave:
+          \[ h : U \times \{0,1,\dots,m-1\} \to \{0,1,\dots,m-1\} \]
+    \item A \alert{sequência de sondagem} $\langle h(k,0), h(k,1), \dots, h(k,m-1)\rangle$
+          deve ser uma permutação de $\langle 0,1,\dots,m-1\rangle$, onde $h(k,i)$ é a $i$-ésima tentativa (sondagem) para achar a chave $k$.
+    \item A busca percorre a mesma sequência e para (sem sucesso) ao achar um slot vazio.
+    % \item Nos procedimentos a seguir, os elementos são as próprias chaves (sem dados satélites).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Inserção: \proc{Hash-Insert}}
+  \begin{columns}[c]
+    \begin{column}{0.4\textwidth}
+      \begin{pseudo}[\small]{\proc{Hash-Insert}$(T,k)$}
+        \li $i = 0$
+        \li \REPEAT
+        \li[1] $q = h(k,i)$
+        \li[1] \IF $T[q] \eqq \NIL$
+        \li[2] $T[q] = k$
+        \li[2] \RETURN $q$
+        \li[1] \ELSE $i = i+1$
+        \li \UNTIL $i \eqq m$
+        \li \ERROR ``hash table overflow''
+      \end{pseudo}
+      \vspace{2mm}
+      {\small Retorna o slot onde $k$ foi armazenada ou sinaliza tabela cheia.}
+    \end{column}
+    \begin{column}{0.58\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.85, transform shape]
+        \foreach \v [count=\ii from 0] in {,79,,,69,98,,72,,14,,50,} {
+          \ifnum\ii=9 \def\fc{orangec!70}\else\def\fc{white}\fi
+          \node[draw, thick, fill=\fc, minimum width=9mm, minimum height=4.6mm, inner sep=0pt, font=\small] (T\ii) at (0,-\ii*0.46) {\v};
+          \node[idx] at ($(T\ii.west)+(-0.2,0)$) {\ii};
+        }
+        \draw[->, thick, hlb] (T1.east) to[out=0, in=0, looseness=1.1] node[right, font=\scriptsize] {$i=1$} (T5.east);
+        \draw[->, thick, hlb] (T5.east) to[out=0, in=0, looseness=1.1] node[right, font=\scriptsize] {$i=2$} (T9.east);
+        \draw[<-, thick, hlb] (T1.west) -- ++(-0.6,0) node[left, font=\scriptsize] {$i=0$};
+        \node[font=\scriptsize, align=left, anchor=north west] at (2.3,-2.9)
+          {$m=13$\\ $h_1(k)=k \bmod 13$\\ $h_2(k)=1+(k \bmod 11)$\\[1mm]
+           \proc{Hash-Insert}$(T,14)$:\\ $h_1(14)=1$, $h_2(14)=4$\\ sondas: 1, 5, 9 $\Rightarrow$ slot 9};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Busca: \proc{Hash-Search}}
+  \begin{columns}[c]
+    \begin{column}{0.4\textwidth}
+      \begin{pseudo}[\small]{\proc{Hash-Search}$(T,k)$}
+        \li $i = 0$
+        \li \REPEAT
+        \li[1] $q = h(k,i)$
+        \li[1] \IF $T[q] \eqq k$
+        \li[2] \RETURN $q$
+        \li[1] $i = i+1$
+        \li \UNTIL $T[q] \eqq \NIL$ \OR $i \eqq m$
+        \li \RETURN \NIL
+      \end{pseudo}
+      \vspace{2mm}
+      {\small Percorre a mesma sequência da inserção: encontrar um slot vazio
+      prova que $k$ não está na tabela.}
+    \end{column}
+    \begin{column}{0.58\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.85, transform shape]
+        \foreach \v [count=\ii from 0] in {,79,,,69,98,,72,,14,,50,} {
+          \node[draw, thick, fill=white, minimum width=9mm, minimum height=4.6mm, inner sep=0pt, font=\small] (T\ii) at (0,-\ii*0.46) {\v};
+          \node[idx] at ($(T\ii.west)+(-0.2,0)$) {\ii};
+        }
+        \node[draw, thick, fill=hlb!30, minimum width=9mm, minimum height=4.6mm] at (T1) {79};
+        \node[draw, thick, fill=hlb!30, minimum width=9mm, minimum height=4.6mm] at (T7) {72};
+        \node[draw, thick, fill=rbred!30, minimum width=9mm, minimum height=4.6mm, font=\tiny] at (T0) {\NIL};
+        \draw[<-, thick, hlb] (T1.west) -- ++(-0.6,0) node[left, font=\scriptsize] {$i=0$};
+        \draw[->, thick, hlb] (T1.east) to[out=0, in=0, looseness=0.9] node[right, font=\scriptsize] {$i=1$} (T7.east);
+        \draw[->, thick, hlb] (T7.east) to[out=-10, in=0, looseness=1.6] node[right, pos=0.3, font=\scriptsize] {$i=2$ (\emph{wrap})} (T0.east);
+        \node[font=\scriptsize, align=left, anchor=west] at (1.9,-4.0)
+          {\proc{Hash-Search}$(T,27)$:\\ $h_1(27)=1$, $h_2(27)=6$\\ sondas: 1, 7, 0\\ $T[0]=\NIL$ $\Rightarrow$ retorna \NIL};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Remoção em endereçamento aberto}
+  \begin{itemize}
+    \item Remover a chave do slot $q$ marcando-o com \NIL\ é um \alert{erro}: chaves
+          inseridas depois, cuja sondagem passou por $q$, se tornariam inacessíveis.
+    \item Solução: marcar o slot com o valor especial \DELETED.
+      \begin{itemize}
+        \item \proc{Hash-Insert} trata \DELETED\ como vazio;
+        \item \proc{Hash-Search} passa por cima de \DELETED.
+      \end{itemize}
+    \item Desvantagem: o tempo de busca deixa de depender só de $\alpha$ $\Rightarrow$
+          encadeamento é preferido quando há muitas remoções.
+  \end{itemize}
+  \centering
+  \begin{tikzpicture}
+    \node[font=\scriptsize, anchor=east] at (-0.5,0) {$h(k,i)=(k+i)\bmod 8$};
+    \fillarray{a}{0,0}{,,,3,11,19,,}{(\i>=4)&&(\i<=6)}
+    \foreach \i in {1,...,8} { \pgfmathtruncatemacro{\j}{\i-1} \node[idx, fill=white] at ($(a\i.north)+(0,0.17)$) {\j}; }
+    \node[font=\scriptsize, anchor=west] at (5.0,0) {chaves 3, 11, 19 colidem no slot 3};
+    \fillarray{b}{0,-1.3}{,,,3,,19,,}{(\i==4)||(\i==6)}
+    \foreach \i in {1,...,8} { \pgfmathtruncatemacro{\j}{\i-1} \node[idx, fill=white] at ($(b\i.north)+(0,0.17)$) {\j}; }
+    \node[cell, fill=rbred!30, font=\tiny] at (b5) {\NIL};
+    \node[font=\scriptsize, anchor=west, text=black] at (5.0,-1.3) {remover 11 com \NIL: busca por 19 para no slot 4!};
+    \fillarray{c}{0,-2.6}{,,,3,,19,,}{(\i==4)||(\i==6)}
+    \foreach \i in {1,...,8} { \pgfmathtruncatemacro{\j}{\i-1} \node[idx, fill=white] at ($(c\i.north)+(0,0.17)$) {\j}; }
+    \node[cell, fill=green!25, font=\tiny] at (c5) {\textsc{d}};
+    \node[font=\scriptsize, anchor=west, text=green!40!black] at (5.0,-2.6) {com \DELETED: a busca continua e acha 19};
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Implementação da sondagem no endereçamento aberto}
+  \begin{columns}[c]
+    \begin{column}{0.54\textwidth}
+      \begin{block}{Double hashing}
+        \small
+        \[ h(k,i) = (h_1(k) + i\,h_2(k)) \bmod m \]
+        \begin{itemize}\footnotesize
+          \item $h_2(k)$ deve ser primo relativo a $m$: p.\,ex.\ $m=2^p$ e $h_2$ ímpar, ou
+                $m$ primo e $0<h_2(k)<m$.
+          \item Ex.: $h_1(k)=k\bmod m$, $h_2(k)=1+(k\bmod m')$, $m'=m-1$. Com $k=123456$,
+                $m=701$, $m'=700$: $h_1=80$, $h_2=257$.
+          \item Gera $\Theta(m^2)$ sequências: próximo do ideal.
+        \end{itemize}
+      \end{block}
+      \begin{block}{Linear probing}
+        \small $h(k,i) = (h_1(k) + i) \bmod m$ \quad (double hashing com $h_2(k)=1$).
+        \footnotesize Mais simples; apenas $m$ sequências distintas.
+      \end{block}
+    \end{column}
+    \begin{column}{0.44\textwidth}
+      \centering
+      {\scriptsize Linear probing, $m=10$, $h_1(k)=k\bmod 10$:\\ \proc{Hash-Insert}$(T,42)$}\\[2mm]
+      \begin{tikzpicture}[scale=0.85, transform shape]
+        \foreach \v [count=\i from 0] in {,,12,22,32,42,,17,,} {
+          \pgfmathtruncatemacro{\oc}{(\i>=2)&&(\i<=4)||(\i==7)}
+          \ifnum\i=5 \def\fc{orangec!70}\else\ifnum\oc=1 \def\fc{tanc}\else\def\fc{white}\fi\fi
+          \node[cell, fill=\fc] (L\i) at (\i*0.6,0) {\v};
+          \node[idx] at ($(L\i.south)+(0,-0.17)$) {\i};
+        }
+        \draw[->, thick, hlb] (L2.north) to[out=60, in=120] (L3.north);
+        \draw[->, thick, hlb] (L3.north) to[out=60, in=120] (L4.north);
+        \draw[->, thick, hlb] (L4.north) to[out=60, in=120] (L5.north);
+        \draw[<-, thick, hlb] (L2.north) -- ++(0,0.5) node[above, font=\scriptsize] {$i=0$};
+      \end{tikzpicture}
+
+      \vspace{2mm}
+      {\scriptsize Sondas 2, 3, 4 ocupadas; 42 vai para o slot 5.\\
+      Sequências longas de slots ocupados tendem a crescer.}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% \begin{frame}{Desempenho do endereçamento aberto}
+%   \begin{columns}[c]
+%     \begin{column}{0.5\textwidth}
+%       \begin{itemize}\small
+%         \item Supondo hashing uniforme por permutação independente, sem remoções e
+%               $\alpha=n/m<1$:
+%           \begin{itemize}\footnotesize
+%             \item busca sem sucesso (e inserção): no máximo $\dfrac{1}{1-\alpha}$
+%                   sondagens em média;
+%             \item busca com sucesso: no máximo $\dfrac{1}{\alpha}\ln\dfrac{1}{1-\alpha}$.
+%           \end{itemize}
+%         \item Intuição: $\frac{1}{1-\alpha} = 1+\alpha+\alpha^2+\cdots$ --- a 1ª sonda sempre ocorre;
+%               com prob.\ $\approx\alpha$ há uma 2ª; com $\approx\alpha^2$ uma 3ª, \dots
+%       \end{itemize}
+%       \centering\footnotesize
+%       \begin{tabular}{ccc}
+%         \toprule
+%         $\alpha$ & sem sucesso & com sucesso \\ \midrule
+%         0{,}5 & 2 & $<1{,}387$ \\
+%         0{,}9 & 10 & $<2{,}559$ \\
+%         \bottomrule
+%       \end{tabular}
+%     \end{column}
+%     \begin{column}{0.48\textwidth}
+%       \centering
+%       \begin{tikzpicture}[xscale=5.2, yscale=0.42]
+%         \draw[->] (0,0) -- (1.02,0) node[right, font=\scriptsize] {$\alpha$};
+%         \draw[->] (0,0) -- (0,11) node[above, font=\scriptsize] {sondagens};
+%         \foreach \x in {0.2,0.4,0.6,0.8,1.0} { \draw (\x,0) -- (\x,-0.2) node[below, font=\tiny] {\x}; }
+%         \foreach \y in {2,4,6,8,10} { \draw (0,\y) -- (-0.015,\y) node[left, font=\tiny] {\y}; }
+%         \draw[thick, rbred, domain=0:0.905, samples=60] plot (\x, {1/(1-\x)});
+%         \draw[thick, hlb, domain=0.02:0.95, samples=60] plot (\x, {ln(1/(1-\x))/\x});
+%         \node[font=\scriptsize, rbred, anchor=east] at (0.86,9.5) {$\frac{1}{1-\alpha}$};
+%         \node[font=\scriptsize, hlb, anchor=south] at (0.8,2.2) {$\frac{1}{\alpha}\ln\frac{1}{1-\alpha}$};
+%       \end{tikzpicture}
+%     \end{column}
+%   \end{columns}
+% \end{frame}
+
+% =====================================================================
+\section{Binary search trees}
+% =====================================================================
+
+\begin{frame}{Binary search trees (árvores binárias de busca)}
+  \begin{columns}[c]
+    \begin{column}{0.5\textwidth}
+      \begin{itemize}\small
+        \item Suportam \proc{Search}, \proc{Minimum}, \proc{Maximum}, \proc{Predecessor},
+              \proc{Successor}, \proc{Insert} e \proc{Delete}: servem como dicionário e como
+              fila de prioridade.
+        \item Cada nó: $key$, dados satélites, $left$, $right$ e $p$.
+        \item \alert{Propriedade de BST}: se $y$ está na subárvore esquerda de $x$,
+              $y\at{key} \le x\at{key}$; se está na direita, $y\at{key}\ge x\at{key}$.
+        \item Operações em tempo $O(h)$, $h$ = altura: $\Theta(\lg n)$ para árvore
+              completa, mas $\Theta(n)$ se for uma cadeia linear.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \centering
+      \begin{tikzpicture}[level distance=9mm, level 1/.style={sibling distance=16mm},
+                          level 2/.style={sibling distance=9mm}]
+        \node[vtx] {6}
+          child {node[vtx] {5} child {node[vtx] {2}} child {node[vtx] {5}}}
+          child {node[vtx] {7} child[missing] child {node[vtx] {8}}};
+        \node[font=\scriptsize] at (0,-2.5) {(a) altura 2};
+      \end{tikzpicture}\hspace{4mm}
+      \begin{tikzpicture}[level distance=7.5mm, level 1/.style={sibling distance=10mm},
+                          level 2/.style={sibling distance=10mm},
+                          level 3/.style={sibling distance=10mm},
+                          level 4/.style={sibling distance=10mm}]
+        \node[vtx] {2}
+          child[missing] child {node[vtx] {5}
+            child[missing] child {node[vtx] {7}
+              child {node[vtx] {6} child {node[vtx] {5}} child[missing]}
+              child {node[vtx] {8}}}};
+        \node[font=\scriptsize] at (1.0,-3.6) {(b) altura 4};
+      \end{tikzpicture}
+
+      {\scriptsize Duas BSTs com as mesmas chaves.}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Percurso em ordem: \proc{Inorder-Tree-Walk}}
+  \begin{columns}[c]
+    \begin{column}{0.46\textwidth}
+      \begin{pseudo}[\small]{\proc{Inorder-Tree-Walk}$(x)$}
+        \li \IF $x \neq \NIL$
+        \li[1] \proc{Inorder-Tree-Walk}$(x\at{left})$
+        \li[1] \PRINT $x\at{key}$
+        \li[1] \proc{Inorder-Tree-Walk}$(x\at{right})$
+      \end{pseudo}
+      \vspace{3mm}
+      \begin{itemize}\small
+        \item Imprime a raiz \emph{entre} as subárvores esquerda e direita:
+              chaves em \alert{ordem crescente}.
+        \item \emph{Preorder}: raiz antes; \emph{postorder}: raiz depois.
+        \item Chamada inicial: \proc{Inorder-Tree-Walk}$(T\at{root})$;
+              tempo $\Theta(n)$.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.52\textwidth}
+      \centering
+      \begin{tikzpicture}[level distance=12mm, level 1/.style={sibling distance=28mm},
+                          level 2/.style={sibling distance=14mm}]
+        \node[vtx] (r) {6}
+          child {node[vtx] (a) {5} child {node[vtx] (b) {2}} child {node[vtx] (c) {5}}}
+          child {node[vtx] (d) {7} child[missing] child {node[vtx] (e) {8}}};
+        \foreach \n/\t in {b/1,a/2,c/3,r/4,d/5,e/6} {
+          \node[badge] at ($(\n)+(0.38,0.3)$) {\t};
+        }
+        \node[font=\small, anchor=north] at (0,-2.8) {ordem de impressão (laranja): 2, 5, 5, 6, 7, 8};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Busca: \proc{Tree-Search}}
+  \begin{columns}[c]
+    \begin{column}{0.46\textwidth}
+      \begin{pseudo}[\small]{\proc{Tree-Search}$(x,k)$}
+        \li \IF $x \eqq \NIL$ \OR $k \eqq x\at{key}$
+        \li[1] \RETURN $x$
+        \li \IF $k < x\at{key}$
+        \li[1] \RETURN \proc{Tree-Search}$(x\at{left},k)$
+        \li \ELSE \RETURN \proc{Tree-Search}$(x\at{right},k)$
+      \end{pseudo}
+      \vspace{3mm}
+      \begin{pseudo}[\small]{\proc{Iterative-Tree-Search}$(x,k)$}
+        \li \WHILE $x \neq \NIL$ \AND $k \neq x\at{key}$
+        \li[1] \IF $k < x\at{key}$
+        \li[2] $x = x\at{left}$
+        \li[1] \ELSE $x = x\at{right}$
+        \li \RETURN $x$
+      \end{pseudo}
+      \vspace{2mm}
+      {\small Caminho simples descendente: $O(h)$.}
+    \end{column}
+    \begin{column}{0.52\textwidth}
+      \centering
+      \begin{tikzpicture}[level distance=10mm, level 1/.style={sibling distance=32mm},
+                          level 2/.style={sibling distance=16mm},
+                          level 3/.style={sibling distance=9mm},
+                          level 4/.style={sibling distance=8mm}]
+        \node[vtx] (n15) {15}
+          child {node[vtx] (n6) {6}
+            child {node[vtx] (n3) {3} child {node[vtx] (n2) {2}} child {node[vtx] (n4) {4}}}
+            child {node[vtx] (n7) {7} child[missing]
+              child {node[vtx] (n13) {13} child {node[vtx] (n9) {9}} child[missing]}}}
+          child {node[vtx] (n18) {18} child {node[vtx] (n17) {17}} child {node[vtx] (n20) {20}}};
+        \draw[hedge] (n15) -- (n6); \draw[hedge] (n6) -- (n7); \draw[hedge] (n7) -- (n13);
+        \foreach \n/\k in {n15/15,n6/6,n7/7,n13/13} { \node[hv] at (\n) {\k}; }
+        \node[font=\small, anchor=north] at (0,-4.5) {\proc{Tree-Search}$(T\at{root},13)$: $15\to6\to7\to13$};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Mínimo e máximo: \proc{Tree-Minimum} e \proc{Tree-Maximum}}
+  \begin{columns}[c]
+    \begin{column}{0.42\textwidth}
+      \begin{pseudo}[\small]{\proc{Tree-Minimum}$(x)$}
+        \li \WHILE $x\at{left} \neq \NIL$
+        \li[1] $x = x\at{left}$
+        \li \RETURN $x$
+      \end{pseudo}
+      \vspace{3mm}
+      \begin{pseudo}[\small]{\proc{Tree-Maximum}$(x)$}
+        \li \WHILE $x\at{right} \neq \NIL$
+        \li[1] $x = x\at{right}$
+        \li \RETURN $x$
+      \end{pseudo}
+      \vspace{3mm}
+      {\small Seguir ponteiros $left$ (ou $right$) a partir da raiz; $O(h)$.
+      Supõe $x \neq \NIL$.}
+    \end{column}
+    \begin{column}{0.56\textwidth}
+      \centering
+      \begin{tikzpicture}[level distance=10mm, level 1/.style={sibling distance=32mm},
+                          level 2/.style={sibling distance=16mm},
+                          level 3/.style={sibling distance=9mm},
+                          level 4/.style={sibling distance=8mm}]
+        \node[vtx] (n15) {15}
+          child {node[vtx] (n6) {6}
+            child {node[vtx] (n3) {3} child {node[vtx] (n2) {2}} child {node[vtx] (n4) {4}}}
+            child {node[vtx] (n7) {7} child[missing]
+              child {node[vtx] (n13) {13} child {node[vtx] (n9) {9}} child[missing]}}}
+          child {node[vtx] (n18) {18} child {node[vtx] (n17) {17}} child {node[vtx] (n20) {20}}};
+        \draw[hedge] (n15) -- (n6); \draw[hedge] (n6) -- (n3); \draw[hedge] (n3) -- (n2);
+        \draw[oedge] (n15) -- (n18); \draw[oedge] (n18) -- (n20);
+        \foreach \n/\k in {n6/6,n3/3,n2/2} { \node[hv] at (\n) {\k}; }
+        \foreach \n/\k in {n18/18,n20/20} { \node[ov] at (\n) {\k}; }
+        \node[vtx, fill=hlb!40] at (n15) {15};
+        \node[font=\small, anchor=north] at (0,-4.5) {mínimo $=2$ (azul), máximo $=20$ (laranja)};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Sucessor: \proc{Tree-Successor}}
+  \begin{columns}[c]
+    \begin{column}{0.56\textwidth}
+      \begin{pseudo}[\scriptsize]{\proc{Tree-Successor}$(x)$}
+        \li \IF $x\at{right} \neq \NIL$
+        \li[1] \RETURN \proc{Tree-Minimum}$(x\at{right})$ \Cm{leftmost node in right subtree}
+        \li \ELSE \Cm{find the lowest ancestor of $x$ whose}
+        \par\hfill{\color{gray!70!black}// left child is an ancestor of $x$}
+        \li[1] $y = x\at{p}$
+        \li[1] \WHILE $y \neq \NIL$ \AND $x \eqq y\at{right}$
+        \li[2] $x = y$
+        \li[2] $y = y\at{p}$
+        \li[1] \RETURN $y$
+      \end{pseudo}
+      \vspace{2mm}
+      \begin{itemize}\footnotesize
+        \item Sucessor = próximo nó no percurso em ordem; dispensa comparar chaves.
+        \item \proc{Tree-Predecessor} é simétrico. Ambos $O(h)$.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.62, transform shape, level distance=10mm,
+                          level 1/.style={sibling distance=32mm},
+                          level 2/.style={sibling distance=16mm},
+                          level 3/.style={sibling distance=9mm},
+                          level 4/.style={sibling distance=8mm}]
+        \node[vtx] (n15) {15}
+          child {node[vtx] (n6) {6}
+            child {node[vtx] (n3) {3} child {node[vtx] (n2) {2}} child {node[vtx] (n4) {4}}}
+            child {node[vtx] (n7) {7} child[missing]
+              child {node[vtx] (n13) {13} child {node[vtx] (n9) {9}} child[missing]}}}
+          child {node[vtx] (n18) {18} child {node[vtx] (n17) {17}} child {node[vtx] (n20) {20}}};
+        \draw[hedge] (n15) -- (n18); \draw[hedge] (n18) -- (n17);
+        \node[ov] at (n15) {15}; \node[hv] at (n18) {18}; \node[hv] at (n17) {17};
+        \node[font=\large, anchor=north, align=center] at (0,-4.1) {(c) sucessor de 15 $=17$\\(mínimo da subárvore direita)};
+      \end{tikzpicture}
+
+      \vspace{2mm}
+      \begin{tikzpicture}[scale=0.62, transform shape, level distance=10mm,
+                          level 1/.style={sibling distance=32mm},
+                          level 2/.style={sibling distance=16mm},
+                          level 3/.style={sibling distance=9mm},
+                          level 4/.style={sibling distance=8mm}]
+        \node[vtx] (n15) {15}
+          child {node[vtx] (n6) {6}
+            child {node[vtx] (n3) {3} child {node[vtx] (n2) {2}} child {node[vtx] (n4) {4}}}
+            child {node[vtx] (n7) {7} child[missing]
+              child {node[vtx] (n13) {13} child {node[vtx] (n9) {9}} child[missing]}}}
+          child {node[vtx] (n18) {18} child {node[vtx] (n17) {17}} child {node[vtx] (n20) {20}}};
+        \draw[hedge] (n13) -- (n7); \draw[hedge] (n7) -- (n6); \draw[hedge] (n6) -- (n15);
+        \node[ov] at (n13) {13}; \node[hv] at (n7) {7}; \node[hv] at (n6) {6}; \node[hv] at (n15) {15};
+        \node[font=\large, anchor=north, align=center] at (0,-4.1) {(d) sucessor de 13 $=15$\\(sobe até vir de um filho esquerdo)};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Inserção: \proc{Tree-Insert}}
+  \begin{columns}[c]
+    \begin{column}{0.5\textwidth}
+      \begin{pseudo}[\footnotesize]{\proc{Tree-Insert}$(T,z)$}
+        \li $x = T\at{root}$ \Cm{node being compared with $z$}
+        \li $y = \NIL$ \Cm{$y$ will be parent of $z$}
+        \li \WHILE $x \neq \NIL$ \Cm{descend until reaching a leaf}
+        \li[1] $y = x$
+        \li[1] \IF $z\at{key} < x\at{key}$
+        \li[2] $x = x\at{left}$
+        \li[1] \ELSE $x = x\at{right}$
+        \li $z\at{p} = y$ \Cm{found the location}
+        \li \IF $y \eqq \NIL$
+        \li[1] $T\at{root} = z$ \Cm{tree $T$ was empty}
+        \li \ELSEIF $z\at{key} < y\at{key}$
+        \li[1] $y\at{left} = z$
+        \li \ELSE $y\at{right} = z$
+      \end{pseudo}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \centering
+      \begin{tikzpicture}[level distance=11mm, level 1/.style={sibling distance=30mm},
+                          level 2/.style={sibling distance=15mm},
+                          level 3/.style={sibling distance=9mm}]
+        \node[vtx] (n12) {12}
+          child {node[vtx] {5} child {node[vtx] {2}} child {node[vtx] {9}}}
+          child {node[vtx] (n18) {18}
+            child {node[vtx] (n15) {15} child {node[vtx] (n13) {13}} child {node[vtx] {17}}}
+            child {node[vtx] {19}}};
+        \draw[hedge] (n12) -- (n18); \draw[hedge] (n18) -- (n15);
+        \draw[oedge] (n15) -- (n13);
+        \node[hv] at (n12) {12}; \node[hv] at (n18) {18}; \node[hv] at (n15) {15};
+        \node[ov] at (n13) {13};
+      \end{tikzpicture}
+
+      \vspace{2mm}
+      {\small Inserção da chave 13: caminho $12\to18\to15$ (azul); novo nó e ligação ao
+      pai em laranja. O ponteiro ``atrasado'' $y$ guarda o futuro pai de $z$.
+      Tempo $O(h)$.}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Remoção: estratégia}
+  Remover um nó $z$ de uma BST tem três casos básicos:
+  \begin{enumerate}
+    \item $z$ \alert{não tem filhos}: basta substituí-lo por \NIL\ no pai.
+    \item $z$ tem \alert{um filho}: o filho ``sobe'' e ocupa a posição de $z$.
+    \item $z$ tem \alert{dois filhos}: encontre o sucessor $y$ de $z$ (que está na
+          subárvore direita e \alert{não tem filho esquerdo}) e coloque $y$ na posição
+          de $z$. Importa se $y$ é ou não o filho direito de $z$.
+  \end{enumerate}
+  \vspace{2mm}
+  O procedimento organiza em quatro casos:
+  \begin{itemize}
+    \item[(a)] $z$ sem filho esquerdo: substitui $z$ por seu filho direito (talvez \NIL);
+    \item[(b)] $z$ só com filho esquerdo: substitui $z$ por esse filho;
+    \item[(c)] dois filhos e o sucessor $y$ é $z\at{right}$: substitui $z$ por $y$;
+    \item[(d)] dois filhos e $y \neq z\at{right}$: primeiro substitui $y$ por seu filho
+               direito, depois substitui $z$ por $y$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Remoção: os quatro casos}
+  \centering
+  \begin{tikzpicture}[scale=0.8, transform shape, level distance=10mm,
+      level 1/.style={sibling distance=12mm}, level 2/.style={sibling distance=14mm}]
+    % (a)
+    \node[font=\small] at (-1.0,0.3) {(a)};
+    \node[vtx] at (0,0) (qa) {$q$} child {node[hv] (za) {$z$} child {node[font=\scriptsize] {\NIL}} child {node[ov] (ra) {$r$}}};
+    \draw[->, thick] (1.4,-1.0) -- (2.1,-1.0);
+    \node[vtx] at (3.0,0) {$q$} child {node[ov] {$r$}};
+    % (b)
+    \node[font=\small] at (5.2,0.3) {(b)};
+    \node[vtx] at (6.2,0) {$q$} child {node[hv] {$z$} child {node[ov] {$l$}} child {node[font=\scriptsize] {\NIL}}};
+    \draw[->, thick] (7.6,-1.0) -- (8.3,-1.0);
+    \node[vtx] at (9.2,0) {$q$} child {node[ov] {$l$}};
+    % (c)
+    \node[font=\small] at (-1.0,-3.0) {(c)};
+    \node[vtx] at (0.4,-3.3) {$q$} child {node[hv] {$z$} child {node[vtx] {$l$}}
+        child {node[ov] {$y$} child {node[font=\scriptsize] {\NIL}} child {node[vtx] {$x$}}}};
+    \draw[->, thick] (2.1,-4.5) -- (2.8,-4.5);
+    \node[vtx] at (4.0,-3.3) {$q$} child {node[ov] {$y$} child {node[vtx] {$l$}} child {node[vtx] {$x$}}};
+    % (d)
+    \node[font=\small] at (5.2,-3.0) {(d)};
+    \node[vtx] at (6.6,-3.3) {$q$} child {node[hv] {$z$} child {node[vtx] {$l$}}
+        child {node[vtx] {$r$} child {node[ov] {$y$} child {node[font=\scriptsize] {\NIL}} child {node[vtx] {$x$}}} child[missing]}};
+    \draw[->, thick] (8.1,-4.5) -- (8.6,-4.5);
+    \node[vtx] at (9.4,-3.3) {$q$} child {node[hv] {$z$} child {node[vtx] {$l$}} child[missing]};
+    \node[ov] at (10.6,-4.3) {$y$} child[missing] child {node[vtx] {$r$} child {node[vtx] {$x$}} child[missing]};
+    \draw[->, thick] (11.6,-4.5) -- (12.1,-4.5);
+    \node[vtx] at (13.0,-3.3) {$q$} child {node[ov] {$y$} child {node[vtx] {$l$}} child {node[vtx] {$r$} child {node[vtx] {$x$}} child[missing]}};
+  \end{tikzpicture}
+
+  \vspace{1mm}
+  {\scriptsize $z$ (azul) é removido; o nó que ocupa sua posição está em laranja. $z$ pode ser
+  a raiz, filho esquerdo ou direito de $q$.}
+\end{frame}
+
+\begin{frame}{Sub-rotina \proc{Transplant}}
+  \begin{columns}[c]
+    \begin{column}{0.42\textwidth}
+      \begin{pseudo}[\small]{\proc{Transplant}$(T,u,v)$}
+        \li \IF $u\at{p} \eqq \NIL$
+        \li[1] $T\at{root} = v$
+        \li \ELSEIF $u \eqq u\at{p}\at{left}$
+        \li[1] $u\at{p}\at{left} = v$
+        \li \ELSE $u\at{p}\at{right} = v$
+        \li \IF $v \neq \NIL$
+        \li[1] $v\at{p} = u\at{p}$
+      \end{pseudo}
+      \vspace{2mm}
+      {\small Substitui a subárvore com raiz $u$ pela subárvore com raiz $v$ como filha
+      do pai de $u$. Não atualiza $v\at{left}$ nem $v\at{right}$ (responsabilidade de
+      quem chama).}
+    \end{column}
+    \begin{column}{0.56\textwidth}
+      \centering
+      \begin{tikzpicture}[level distance=10mm, sibling distance=14mm]
+        \node[vtx] (p1) at (0,0) {}
+          child {node[hv] (u1) {$u$} child {node[sub] {}}}
+          child {node[vtx] {} child {node[sub] {}}};
+        \node[font=\scriptsize, above=0mm of p1] {$u\at{p}$};
+        \node[ov] (v1) at (1.9,-1.4) {$v$} child {node[sub] {}};
+        \draw[->, very thick] (2.6,-1.2) -- (3.4,-1.2) node[midway, above, font=\scriptsize] {\proc{Transplant}};
+        \node[vtx] (p2) at (5.0,0) {}
+          child {node[ov] (v2) {$v$} child {node[sub] {}}}
+          child {node[vtx] {} child {node[sub] {}}};
+        \node[font=\scriptsize, above=0mm of p2] {$u\at{p}$};
+        \draw[oedge] (p2) -- (v2);
+        \node[hv] (u2) at (3.3,-2.4) {$u$};
+        \node[sub] at ($(u2.south)+(0,-0.35)$) {};
+        \draw[thick] (u2) -- ($(u2.south)+(0,-0.35)$);
+        \node[font=\scriptsize, anchor=north] at (3.3,-3.8) {(desligado)};
+      \end{tikzpicture}
+
+      \vspace{1mm}
+      {\scriptsize Linhas 1--2: $u$ é a raiz; 3--5: $u$ é filho esquerdo ou direito;
+      6--7: atualiza $v\at{p}$ se $v \neq \NIL$.}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Remoção: \proc{Tree-Delete}}
+  \begin{columns}[c]
+    \begin{column}{0.6\textwidth}
+      \begin{pseudo}[\scriptsize]{\proc{Tree-Delete}$(T,z)$}
+        \li \IF $z\at{left} \eqq \NIL$
+        \li[1] \proc{Transplant}$(T,z,z\at{right})$ \Cm{replace $z$ by its right child}
+        \li \ELSEIF $z\at{right} \eqq \NIL$
+        \li[1] \proc{Transplant}$(T,z,z\at{left})$ \Cm{replace $z$ by its left child}
+        \li \ELSE $y = \proc{Tree-Minimum}(z\at{right})$ \Cm{$y$ is $z$'s successor}
+        \li[1] \IF $y \neq z\at{right}$ \Cm{is $y$ farther down the tree?}
+        \li[2] \proc{Transplant}$(T,y,y\at{right})$ \Cm{replace $y$ by its right child}
+        \li[2] $y\at{right} = z\at{right}$ \Cm{$z$'s right child becomes}
+        \li[2] $y\at{right}\at{p} = y$ \Cm{\quad $y$'s right child}
+        \li[1] \proc{Transplant}$(T,z,y)$ \Cm{replace $z$ by its successor $y$}
+        \li[1] $y\at{left} = z\at{left}$ \Cm{and give $z$'s left child to $y$,}
+        \li[1] $y\at{left}\at{p} = y$ \Cm{\quad which had no left child}
+      \end{pseudo}
+      \vspace{1mm}
+      {\footnotesize Tudo é $O(1)$ exceto \proc{Tree-Minimum}: $O(h)$.}
+    \end{column}
+    \begin{column}{0.38\textwidth}
+      \centering
+      {\scriptsize \proc{Tree-Delete}$(T,z)$, $z$ = nó 15 (caso (d)):}\\[1mm]
+      \begin{tikzpicture}[scale=0.62, transform shape, level distance=10mm,
+                          level 1/.style={sibling distance=30mm},
+                          level 2/.style={sibling distance=16mm},
+                          level 3/.style={sibling distance=9mm}]
+        \node[hv] (n15) {15}
+          child {node[vtx] {6} child {node[vtx] {3}} child {node[vtx] {7}}}
+          child {node[vtx] (n18) {18} child {node[ov] (n17) {17} child[missing] child {node[vtx] {17{,}5}}} child {node[vtx] {20}}};
+        \node[font=\large, right=1mm of n17] {$y$};
+        \node[font=\large, left=1mm of n15] {$z$};
+      \end{tikzpicture}
+
+      $\Downarrow$\\
+      \begin{tikzpicture}[scale=0.62, transform shape, level distance=10mm,
+                          level 1/.style={sibling distance=30mm},
+                          level 2/.style={sibling distance=16mm},
+                          level 3/.style={sibling distance=9mm}]
+        \node[ov] (n17) {17}
+          child {node[vtx] {6} child {node[vtx] {3}} child {node[vtx] {7}}}
+          child {node[vtx] (n18) {18} child {node[vtx] {17{,}5}} child {node[vtx] {20}}};
+      \end{tikzpicture}
+
+      {\scriptsize linhas 7--9: 17{,}5 ocupa o lugar de $y$; linhas 10--12: $y$ ocupa o lugar de $z$.}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% =====================================================================
+\section{Red-black trees}
+% =====================================================================
+
+\begin{frame}{Red-black trees (árvores rubro-negras)}
+  \begin{itemize}
+    \item BSTs \alert{balanceadas}: garantem $O(\lg n)$ no pior caso.
+    \item Um bit extra por nó: $color \in \{\RED, \BLACK\}$. Atributos: $color$, $key$,
+          $left$, $right$, $p$.
+    \item Ponteiros \NIL\ são vistos como \alert{folhas} (nós externos); nós com chave são
+          internos.
+  \end{itemize}
+  \begin{block}{Propriedades rubro-negras}
+    \begin{enumerate}
+      \item Todo nó é vermelho ou preto.
+      \item A raiz é preta.
+      \item Toda folha (\NIL) é preta.
+      \item Se um nó é vermelho, ambos os filhos são pretos.
+      \item Para cada nó, todos os caminhos simples dele até folhas descendentes contêm
+            o mesmo número de nós pretos.
+    \end{enumerate}
+  \end{block}
+  \begin{itemize}
+    \item Nenhum caminho raiz--folha é mais que o dobro de outro: altura
+          $\le 2\lg(n+1) = O(\lg n)$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Exemplo de red-black tree}
+  \centering
+  \begin{tikzpicture}[scale=0.82, transform shape, level distance=11mm,
+      level 1/.style={sibling distance=64mm}, level 2/.style={sibling distance=32mm},
+      level 3/.style={sibling distance=16mm}, level 4/.style={sibling distance=9mm},
+      level 5/.style={sibling distance=8mm},
+      bh/.style={font=\scriptsize, text=gray!50!black}]
+    \node[B] (n26) {26}
+      child {node[R] (n17) {17}
+        child {node[B] (n14) {14}
+          child {node[R] (n10) {10}
+            child {node[B] (n7) {7} child {node[R] (n3) {3}} child[missing]}
+            child {node[B] (n12) {12}}}
+          child {node[B] (n16) {16} child {node[R] (n15) {15}} child[missing]}}
+        child {node[B] (n21) {21}
+          child {node[B] (n19) {19} child[missing] child {node[R] (n20) {20}}}
+          child {node[B] (n23) {23}}}}
+      child {node[B] (n41) {41}
+        child {node[R] (n30) {30}
+          child {node[B] (n28) {28}}
+          child {node[B] (n38) {38} child {node[R] (n35) {35}} child {node[R] (n39) {39}}}}
+        child {node[B] (n47) {47}}};
+    \foreach \n/\h in {n26/3,n17/3,n41/2,n14/2,n21/2,n30/2,n47/1,n10/2,n16/1,n19/1,
+                       n23/1,n28/1,n38/1,n7/1,n12/1,n15/1,n20/1,n35/1,n39/1,n3/1} {
+      \node[bh, anchor=south west] at ($(\n.north east)+(-0.08,-0.12)$) {\h};
+    }
+  \end{tikzpicture}
+
+  \vspace{1mm}
+  {\small Números em cinza: \alert{altura negra} $bh(x)$ --- nº de nós pretos em qualquer caminho
+  de $x$ (exclusive) até uma folha. As folhas \NIL\ foram omitidas.}
+\end{frame}
+
+\begin{frame}{A sentinela $T\at{nil}$}
+  \begin{columns}[c]
+    \begin{column}{0.5\textwidth}
+      \begin{itemize}
+        \item Para simplificar condições de contorno, uma única sentinela $T\at{nil}$
+              representa \emph{todas} as folhas \NIL\ e o pai da raiz.
+        \item $T\at{nil}\at{color} = \BLACK$; demais atributos ($p$, $left$, $right$, $key$)
+              são arbitrários.
+        \item Permite tratar um filho \NIL\ de $x$ como um nó comum cujo pai é $x$.
+        \item Consequência: \proc{Search}, \proc{Minimum}, \proc{Maximum}, \proc{Successor}
+              e \proc{Predecessor} rodam em $O(\lg n)$ (com \NIL\ trocado por $T\at{nil}$).
+        \item Mas \proc{Tree-Insert}/\proc{Tree-Delete} podem violar as propriedades $\Rightarrow$
+              precisamos de \alert{rotações} e \alert{recolorações} (\textit{fixups}).
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \centering
+      \begin{tikzpicture}[level distance=12mm, level 1/.style={sibling distance=26mm},
+                          level 2/.style={sibling distance=13mm}]
+        \node[B] (r) {7}
+          child {node[R] (a) {3}}
+          child {node[B] (b) {18} child {node[R] (c) {10}} child[missing]};
+        \node[nilsq, minimum width=14mm, minimum height=5mm, font=\scriptsize] (nil) at (0,-3.6) {$T\at{nil}$};
+        \foreach \n/\o in {a/-20,a/-60,c/-80,c/-100,b/-60} {
+          \draw[->, gray, thin] (\n) to[out=\o, in=90] (nil.north);
+        }
+        \draw[->, gray, thin] (r) to[out=150, in=180, looseness=1.4] (nil.west);
+      \end{tikzpicture}
+
+      {\scriptsize Todos os ponteiros para \NIL\ (inclusive $T\at{root}\at{p}$)
+      apontam para a sentinela.}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Rotações}
+  \begin{columns}[c]
+    \begin{column}{0.4\textwidth}
+      \begin{itemize}\small
+        \item Operação local que \alert{preserva a propriedade de BST}, alterando apenas
+              ponteiros, em $O(1)$.
+        \item \proc{Left-Rotate}$(T,x)$: supõe $x\at{right} = y \neq T\at{nil}$; $y$ vira a
+              nova raiz da subárvore, $x$ vira filho esquerdo de $y$, e $\beta$
+              (filho esquerdo de $y$) vira filho direito de $x$.
+        \item \proc{Right-Rotate}$(T,y)$ é a inversa.
+        % \item Ordem em ordem preservada: $\alpha < x < \beta < y < \gamma$.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.58\textwidth}
+      \centering
+      \begin{tikzpicture}[level distance=11mm, level 1/.style={sibling distance=16mm},
+                          level 2/.style={sibling distance=12mm}]
+        \node[vtx] (y1) at (0,0) {$y$}
+          child {node[vtx] {$x$} child {node[sub] {$\alpha$}} child {node[sub] {$\beta$}}}
+          child {node[sub] {$\gamma$}};
+        \node[vtx] (x2) at (5.2,0) {$x$}
+          child {node[sub] {$\alpha$}}
+          child {node[vtx] {$y$} child {node[sub] {$\beta$}} child {node[sub] {$\gamma$}}};
+        \draw[<-, very thick, hlb] (1.6,-0.6) -- (3.6,-0.6)
+          node[midway, above, font=\scriptsize] {\proc{Left-Rotate}$(T,x)$};
+        \draw[->, very thick, orangec] (1.6,-1.3) -- (3.6,-1.3)
+          node[midway, below, font=\scriptsize] {\proc{Right-Rotate}$(T,y)$};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{\proc{Left-Rotate}}
+  \begin{columns}[c]
+    \begin{column}{0.6\textwidth}
+      \begin{pseudo}[\scriptsize]{\proc{Left-Rotate}$(T,x)$}
+        \li $y = x\at{right}$
+        \li $x\at{right} = y\at{left}$ \Cm{turn $y$'s left subtree into $x$'s right subtree}
+        \li \IF $y\at{left} \neq T\at{nil}$ \Cm{if $y$'s left subtree is not empty \dots}
+        \li[1] $y\at{left}\at{p} = x$ \Cm{\dots then $x$ becomes the parent of the subtree's root}
+        \li $y\at{p} = x\at{p}$ \Cm{$x$'s parent becomes $y$'s parent}
+        \li \IF $x\at{p} \eqq T\at{nil}$ \Cm{if $x$ was the root \dots}
+        \li[1] $T\at{root} = y$ \Cm{\dots then $y$ becomes the root}
+        \li \ELSEIF $x \eqq x\at{p}\at{left}$ \Cm{otherwise, if $x$ was a left child \dots}
+        \li[1] $x\at{p}\at{left} = y$ \Cm{\dots then $y$ becomes a left child}
+        \li \ELSE $x\at{p}\at{right} = y$ \Cm{otherwise, $x$ was a right child}
+        \li $y\at{left} = x$ \Cm{make $x$ become $y$'s left child}
+        \li $x\at{p} = y$
+      \end{pseudo}
+    \end{column}
+    \begin{column}{0.38\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.8, transform shape]
+        \node[vtx] (pp) at (0,0.9) {};
+        \node[font=\scriptsize, above=0mm of pp] {$x\at{p}$};
+        \node[vtx] (x) at (0,0) {$x$};
+        \node[sub] (a) at (-0.6,-0.5) {$\alpha$};
+        \node[vtx] (y) at (0.6,-0.8) {$y$};
+        \node[sub] (b) at (0.15,-1.3) {$\beta$};
+        \node[sub] (g) at (1.05,-1.3) {$\gamma$};
+        \draw[thick] (pp) -- (x); \draw[thick] (x) -- (a.apex); \draw[thick] (x) -- (y);
+        \draw[thick] (y) -- (b.apex); \draw[thick] (y) -- (g.apex);
+        \draw[->, very thick] (1.6,-0.5) -- (2.3,-0.5);
+        \begin{scope}[xshift=3.6cm]
+          \node[vtx] (pp2) at (0,0.9) {};
+          \node[font=\scriptsize, above=0mm of pp2] {$x\at{p}$};
+          \node[vtx] (y2) at (0,0) {$y$};
+          \node[vtx] (x2) at (-0.6,-0.8) {$x$};
+          \node[sub] (a2) at (-1.05,-1.3) {$\alpha$};
+          \node[sub] (b2) at (-0.15,-1.3) {$\beta$};
+          \node[sub] (g2) at (0.6,-0.5) {$\gamma$};
+          \draw[oedge] (pp2) -- (y2); \draw[oedge] (y2) -- (x2); \draw[oedge] (x2) -- (b2.apex);
+          \draw[thick] (x2) -- (a2.apex); \draw[thick] (y2) -- (g2.apex);
+        \end{scope}
+      \end{tikzpicture}
+
+      \vspace{2mm}
+      {\scriptsize Laranja: ligações alteradas --- linhas 2--4: $\beta$ passa a ser filho de $x$;
+      5--10: $y$ assume o lugar de $x$ junto ao pai; 11--12: $x$ vira filho esquerdo de $y$.}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{\proc{Right-Rotate} (simétrico) e exemplo}
+  \begin{columns}[c]
+    \begin{column}{0.38\textwidth}
+      \begin{pseudo}[\footnotesize]{\proc{Right-Rotate}$(T,y)$}
+        \li $x = y\at{left}$
+        \li $y\at{left} = x\at{right}$
+        \li \IF $x\at{right} \neq T\at{nil}$
+        \li[1] $x\at{right}\at{p} = y$
+        \li $x\at{p} = y\at{p}$
+        \li \IF $y\at{p} \eqq T\at{nil}$
+        \li[1] $T\at{root} = x$
+        \li \ELSEIF $y \eqq y\at{p}\at{right}$
+        \li[1] $y\at{p}\at{right} = x$
+        \li \ELSE $y\at{p}\at{left} = x$
+        \li $x\at{right} = y$
+        \li $y\at{p} = x$
+      \end{pseudo}
+      \vspace{1mm}
+      {\scriptsize Troca-se \emph{left} $\leftrightarrow$ \emph{right} e $x \leftrightarrow y$.}
+    \end{column}
+    \begin{column}{0.6\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.6, transform shape, level distance=10mm,
+          level 1/.style={sibling distance=30mm}, level 2/.style={sibling distance=16mm},
+          level 3/.style={sibling distance=10mm}, level 4/.style={sibling distance=8mm},
+          level 5/.style={sibling distance=7mm}]
+        \node[vtx] {7}
+          child {node[vtx] {4} child {node[vtx] {3} child {node[vtx] {2}} child[missing]} child {node[vtx] {6}}}
+          child {node[hv] (x) {11} child {node[vtx] {9}}
+            child {node[ov] (y) {18}
+              child {node[vtx] {14} child {node[vtx] {12}} child {node[vtx] {17}}}
+              child {node[vtx] {19} child[missing] child {node[vtx] {22} child {node[vtx] {20}} child[missing]}}}};
+        \node[font=\large, right=1mm of x] {$x$};
+        \node[font=\large, right=1mm of y] {$y$};
+      \end{tikzpicture}
+
+      {\scriptsize $\Downarrow$ \proc{Left-Rotate}$(T,x)$}
+
+      \begin{tikzpicture}[scale=0.6, transform shape, level distance=10mm,
+          level 1/.style={sibling distance=30mm}, level 2/.style={sibling distance=16mm},
+          level 3/.style={sibling distance=10mm}, level 4/.style={sibling distance=8mm}]
+        \node[vtx] {7}
+          child {node[vtx] {4} child {node[vtx] {3} child {node[vtx] {2}} child[missing]} child {node[vtx] {6}}}
+          child {node[ov] (y) {18}
+            child {node[hv] (x) {11} child {node[vtx] {9}} child {node[vtx] {14} child {node[vtx] {12}} child {node[vtx] {17}}}}
+            child {node[vtx] {19} child[missing] child {node[vtx] {22} child {node[vtx] {20}} child[missing]}}};
+        \node[font=\large, left=1mm of x] {$x$};
+        \node[font=\large, right=1mm of y] {$y$};
+      \end{tikzpicture}
+
+      {\scriptsize O percurso em ordem é o mesmo antes e depois da rotação.}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Inserção: \proc{RB-Insert}}
+  \begin{columns}[c]
+    \begin{column}{0.56\textwidth}
+      \begin{pseudo}[\footnotesize]{\proc{RB-Insert}$(T,z)$}
+        \li $x = T\at{root}$ \Cm{node being compared with $z$}
+        \li $y = T\at{nil}$ \Cm{$y$ will be parent of $z$}
+        \li \WHILE $x \neq T\at{nil}$ \Cm{descend until reaching the sentinel}
+        \li[1] $y = x$
+        \li[1] \IF $z\at{key} < x\at{key}$
+        \li[2] $x = x\at{left}$
+        \li[1] \ELSE $x = x\at{right}$
+        \li $z\at{p} = y$ \Cm{found the location}
+        \li \IF $y \eqq T\at{nil}$
+        \li[1] $T\at{root} = z$ \Cm{tree $T$ was empty}
+        \li \ELSEIF $z\at{key} < y\at{key}$
+        \li[1] $y\at{left} = z$
+        \li \ELSE $y\at{right} = z$
+        \li $z\at{left} = T\at{nil}$ \Cm{both of $z$'s children are the sentinel}
+        \li $z\at{right} = T\at{nil}$
+        \li $z\at{color} = \RED$ \Cm{the new node starts out red}
+        \li \proc{RB-Insert-Fixup}$(T,z)$ \Cm{correct any violations}
+      \end{pseudo}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.78, transform shape, level distance=10mm,
+          level 1/.style={sibling distance=30mm}, level 2/.style={sibling distance=16mm},
+          level 3/.style={sibling distance=9mm}, level 4/.style={sibling distance=8mm}]
+        \node[B] (n11) {11}
+          child {node[R] (n2) {2} child {node[B] {1}}
+            child {node[B] (n7) {7} child {node[R] (n5) {5}
+                    child {node[R] (n4) {4} child {node[nilsq] {\NIL}} child {node[nilsq] {\NIL}}} child[missing]}
+                  child {node[R] {8}}}}
+          child {node[B] {14} child[missing] child {node[R] {15}}};
+        \draw[hedge] (n11) -- (n2); \draw[hedge] (n2) -- (n7); \draw[hedge] (n7) -- (n5);
+        \draw[oedge] (n5) -- (n4);
+        \node[R, draw=orangec, line width=1.5pt] at (n4) {4};
+        \node[font=\small, left=1mm of n4] {$z$};
+      \end{tikzpicture}
+
+      {\scriptsize Inserção da chave 4: desce como em \proc{Tree-Insert} (azul),
+      $z$ recebe filhos $T\at{nil}$ e cor vermelha. Como $z\at{p}=5$ também é vermelho,
+      a propriedade 4 é violada $\Rightarrow$ \proc{RB-Insert-Fixup}.}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{\proc{RB-Insert-Fixup}}
+  \begin{columns}[t]
+    \begin{column}{0.5\textwidth}
+      \begin{pseudo}[\footnotesize]{\proc{RB-Insert-Fixup}$(T,z)$}
+        \li \WHILE $z\at{p}\at{color} \eqq \RED$
+        \li[1] \IF $z\at{p} \eqq z\at{p}\at{p}\at{left}$ \Cm{is $z$'s parent a left child?}
+        \li[2] $y = z\at{p}\at{p}\at{right}$ \Cm{$y$ is $z$'s uncle}
+        \li[2] \IF $y\at{color} \eqq \RED$ \Cm{parent and uncle red?}
+        \li[3] $z\at{p}\at{color} = \BLACK$ \Cm{\alert{case 1}}
+        \li[3] $y\at{color} = \BLACK$ \Cm{\alert{case 1}}
+        \li[3] $z\at{p}\at{p}\at{color} = \RED$ \Cm{\alert{case 1}}
+        \li[3] $z = z\at{p}\at{p}$ \Cm{\alert{case 1}}
+        \li[2] \ELSE
+        \li[3] \IF $z \eqq z\at{p}\at{right}$ \Cm{\alert{case 2}}
+        \li[4] $z = z\at{p}$ \Cm{\alert{case 2}}
+        \li[4] \proc{Left-Rotate}$(T,z)$ \Cm{\alert{case 2}}
+        \li[3] $z\at{p}\at{color} = \BLACK$ \Cm{\alert{case 3}}
+        \li[3] $z\at{p}\at{p}\at{color} = \RED$ \Cm{\alert{case 3}}
+        \li[3] \proc{Right-Rotate}$(T,z\at{p}\at{p})$ \Cm{\alert{case 3}}
+      \end{pseudo}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{pseudo}[\footnotesize]{}
+        \setcounter{pcline}{15}
+        \li[1] \ELSE \Cm{same as lines 3--15, but with ``right'' and ``left'' exchanged}
+        \li[2] $y = z\at{p}\at{p}\at{left}$
+        \li[2] \IF $y\at{color} \eqq \RED$
+        \li[3] $z\at{p}\at{color} = \BLACK$
+        \li[3] $y\at{color} = \BLACK$
+        \li[3] $z\at{p}\at{p}\at{color} = \RED$
+        \li[3] $z = z\at{p}\at{p}$
+        \li[2] \ELSE
+        \li[3] \IF $z \eqq z\at{p}\at{left}$
+        \li[4] $z = z\at{p}$
+        \li[4] \proc{Right-Rotate}$(T,z)$
+        \li[3] $z\at{p}\at{color} = \BLACK$
+        \li[3] $z\at{p}\at{p}\at{color} = \RED$
+        \li[3] \proc{Left-Rotate}$(T,z\at{p}\at{p})$
+        \li $T\at{root}\at{color} = \BLACK$
+      \end{pseudo}
+      \vspace{2mm}
+      {\scriptsize Só as propriedades 2 (raiz vermelha) e 4 (vermelho com filho vermelho)
+      podem ser violadas. O laço só se repete no caso 1 ($z$ sobe dois níveis):
+      $O(\lg n)$ e no máximo 2 rotações.}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{\proc{RB-Insert-Fixup}: caso 1 --- o tio $y$ é vermelho}
+  \centering
+  \begin{tikzpicture}[scale=0.74, transform shape, level distance=10mm,
+      level 1/.style={sibling distance=26mm}, level 2/.style={sibling distance=13mm},
+      level 3/.style={sibling distance=10mm}]
+    \node[font=\small] at (-2.8,0.2) {(a)};
+    \node[B] at (0,0) {C}
+      child {node[R] {A} child {node[sub] {$\alpha$}}
+        child {node[R] (z1) {B} child {node[sub] {$\beta$}} child {node[sub] {$\gamma$}}}}
+      child {node[R] (y1) {D} child {node[sub] {$\delta$}} child {node[sub] {$\varepsilon$}}};
+    \node[right=0mm of z1] {$z$}; \node[right=0mm of y1] {$y$};
+    \draw[->, very thick] (2.9,-1.0) -- (3.8,-1.0);
+    \node[R] (nz) at (6.6,0) {C}
+      child {node[B] {A} child {node[sub] {$\alpha$}}
+        child {node[R] {B} child {node[sub] {$\beta$}} child {node[sub] {$\gamma$}}}}
+      child {node[B] {D} child {node[sub] {$\delta$}} child {node[sub] {$\varepsilon$}}};
+    \node[above=0.5mm of nz] {novo $z$};
+
+    \node[font=\small] at (-2.8,-4.4) {(b)};
+    \node[B] at (0,-4.6) {C}
+      child {node[R] {B} child {node[R] (z2) {A} child {node[sub] {$\alpha$}} child {node[sub] {$\beta$}}}
+        child {node[sub] {$\gamma$}}}
+      child {node[R] (y2) {D} child {node[sub] {$\delta$}} child {node[sub] {$\varepsilon$}}};
+    \node[left=0mm of z2] {$z$}; \node[right=0mm of y2] {$y$};
+    \draw[->, very thick] (2.9,-5.6) -- (3.8,-5.6);
+    \node[R] (nz2) at (6.6,-4.6) {C}
+      child {node[B] {B} child {node[R] {A} child {node[sub] {$\alpha$}} child {node[sub] {$\beta$}}}
+        child {node[sub] {$\gamma$}}}
+      child {node[B] {D} child {node[sub] {$\delta$}} child {node[sub] {$\varepsilon$}}};
+    \node[above=0.5mm of nz2] {novo $z$};
+  \end{tikzpicture}
+  \hfill
+  \begin{minipage}[b]{0.27\textwidth}
+    \footnotesize
+    Linhas 5--8: o avô $z\at{p}\at{p}$ (preto) transfere sua ``negritude'' para o pai e o
+    tio; o avô fica vermelho e o laço continua com $z = z\at{p}\at{p}$.
+
+    \vspace{2mm}
+    Vale tanto se $z$ é filho direito (a) quanto esquerdo (b). Subárvores
+    $\alpha,\dots,\varepsilon$ têm raiz preta e mesma altura negra.
+  \end{minipage}
+\end{frame}
+
+\begin{frame}{\proc{RB-Insert-Fixup}: casos 2 e 3 --- o tio $y$ é preto}
+  \centering
+  \begin{tikzpicture}[scale=0.85, transform shape, level distance=10mm,
+      level 1/.style={sibling distance=22mm}, level 2/.style={sibling distance=12mm},
+      level 3/.style={sibling distance=10mm}]
+    \node[B] at (0,0) {C}
+      child {node[R] {A} child {node[sub] {$\alpha$}}
+        child {node[R] (z1) {B} child {node[sub] {$\beta$}} child {node[sub] {$\gamma$}}}}
+      child {node[sub] (y1) {$\delta$}};
+    \node[right=0mm of z1] {$z$}; \node[right=0mm of y1.right corner] {$y$};
+    \draw[->, very thick] (1.8,-1.0) -- (3.1,-1.0) node[midway, above, font=\scriptsize] {caso 2};
+    \node[font=\scriptsize] at (2.45,-1.35) {\proc{Left-Rotate}};
+    \node[B] at (5.8,0) {C}
+      child {node[R] {B} child {node[R] (z2) {A} child {node[sub] {$\alpha$}} child {node[sub] {$\beta$}}}
+        child {node[sub] {$\gamma$}}}
+      child {node[sub] (y2) {$\delta$}};
+    \node[left=0mm of z2] {$z$}; \node[right=0mm of y2.right corner] {$y$};
+    \draw[->, very thick] (7.6,-1.0) -- (9.0,-1.0) node[midway, above, font=\scriptsize] {caso 3};
+    \node[font=\scriptsize] at (8.3,-1.35) {\proc{Right-Rotate}};
+    \node[B] at (11.2,0) {B}
+      child {node[R] (z3) {A} child {node[sub] {$\alpha$}} child {node[sub] {$\beta$}}}
+      child {node[R] {C} child {node[sub] {$\gamma$}} child {node[sub] {$\delta$}}};
+    \node[left=0mm of z3] {$z$};
+  \end{tikzpicture}
+
+  \vspace{4mm}
+  \begin{itemize}\small
+    \item \textbf{Caso 2} ($z$ é filho direito, linhas 10--12): $z = z\at{p}$ e rotação à
+          esquerda: transforma no caso 3 sem alterar alturas negras.
+    \item \textbf{Caso 3} ($z$ é filho esquerdo, linhas 13--15): recolore pai (preto) e avô
+          (vermelho) e rotaciona o avô à direita. Não há mais dois vermelhos seguidos:
+          o laço termina.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{\proc{RB-Insert-Fixup}: exemplo completo (1/2)}
+  \centering
+  \begin{tikzpicture}[scale=0.78, transform shape, level distance=10mm,
+      level 1/.style={sibling distance=30mm}, level 2/.style={sibling distance=16mm},
+      level 3/.style={sibling distance=9mm}, level 4/.style={sibling distance=8mm}]
+    \node[font=\small] at (-3.2,0.3) {(a)};
+    \node[B] at (0,0) {11}
+      child {node[R] {2} child {node[B] {1}}
+        child {node[B] {7} child {node[R] {5} child {node[R] (z) {4}} child[missing]}
+                           child {node[R] (y) {8}}}}
+      child {node[B] {14} child[missing] child {node[R] {15}}};
+    \node[left=0mm of z] {$z$}; \node[right=0mm of y] {$y$};
+    \node[font=\small, align=center] at (0,-5.2) {$z$ e $z\at{p}$ vermelhos; tio $y$ vermelho\\ $\Rightarrow$ \alert{caso 1}};
+
+    \draw[->, very thick] (3.6,-1.5) -- (4.6,-1.5);
+
+    \node[font=\small] at (5.4,0.3) {(b)};
+    \node[B] at (8.6,0) {11}
+      child {node[R] {2} child {node[B] {1}}
+        child {node[R] (z) {7} child {node[B] {5} child {node[R] {4}} child[missing]}
+                           child {node[B] {8}}}}
+      child {node[B] (y) {14} child[missing] child {node[R] {15}}};
+    \node[left=0mm of z] {$z$}; \node[right=0mm of y] {$y$};
+    \node[font=\small, align=center] at (8.6,-5.2) {$z=7$ é filho direito; tio $y=14$ preto\\ $\Rightarrow$ \alert{caso 2}};
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}{\proc{RB-Insert-Fixup}: exemplo completo (2/2)}
+  \centering
+  \begin{tikzpicture}[scale=0.78, transform shape, level distance=10mm,
+      level 1/.style={sibling distance=30mm}, level 2/.style={sibling distance=16mm},
+      level 3/.style={sibling distance=9mm}, level 4/.style={sibling distance=8mm}]
+    \node[font=\small] at (-3.2,0.3) {(c)};
+    \node[B] at (0,0) {11}
+      child {node[R] {7} child {node[R] (z) {2} child {node[B] {1}} child {node[B] {5} child {node[R] {4}} child[missing]}}
+                         child {node[B] {8}}}
+      child {node[B] (y) {14} child[missing] child {node[R] {15}}};
+    \node[left=0mm of z] {$z$}; \node[right=0mm of y] {$y$};
+    \node[font=\small, align=center] at (0,-5.2) {após \proc{Left-Rotate}$(T,2)$:\\ $z=2$ é filho esquerdo $\Rightarrow$ \alert{caso 3}};
+
+    \draw[->, very thick] (3.6,-1.5) -- (4.6,-1.5);
+
+    \node[font=\small] at (5.4,0.3) {(d)};
+    \node[B] at (8.6,0) {7}
+      child {node[R] (z) {2} child {node[B] {1}} child {node[B] {5} child {node[R] {4}} child[missing]}}
+      child {node[R] {11} child {node[B] {8}} child {node[B] {14} child[missing] child {node[R] {15}}}};
+    \node[left=0mm of z] {$z$};
+    \node[font=\small, align=center] at (8.6,-5.2) {recoloração e \proc{Right-Rotate}$(T,11)$:\\ árvore rubro-negra válida};
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Remoção: \proc{RB-Transplant}}
+  \begin{columns}[c]
+    \begin{column}{0.42\textwidth}
+      \begin{pseudo}[\small]{\proc{RB-Transplant}$(T,u,v)$}
+        \li \IF $u\at{p} \eqq T\at{nil}$
+        \li[1] $T\at{root} = v$
+        \li \ELSEIF $u \eqq u\at{p}\at{left}$
+        \li[1] $u\at{p}\at{left} = v$
+        \li \ELSE $u\at{p}\at{right} = v$
+        \li $v\at{p} = u\at{p}$
+      \end{pseudo}
+      \vspace{3mm}
+      {\small Diferenças para \proc{Transplant}: usa $T\at{nil}$ em vez de \NIL\ e a
+      atribuição a $v\at{p}$ é \alert{incondicional} --- vale mesmo se $v = T\at{nil}$.}
+    \end{column}
+    \begin{column}{0.56\textwidth}
+      \centering
+      \begin{tikzpicture}[level distance=10mm, sibling distance=14mm]
+        \node[B] (p1) at (0,0) {}
+          child {node[R, draw=hlb, line width=1.5pt] (u1) {$u$}
+            child {node[nilsq] {$T\at{nil}$}} child {node[nilsq] {$T\at{nil}$}}}
+          child {node[B] {} child {node[sub] {}}};
+        \node[font=\scriptsize, above=0mm of p1] {$u\at{p}$};
+        \draw[->, very thick] (1.8,-1.2) -- (2.8,-1.2);
+        \node[B] (p2) at (4.6,0) {}
+          child {node[nilsq] (v2) {$T\at{nil}$}}
+          child {node[B] {} child {node[sub] {}}};
+        \node[font=\scriptsize, above=0mm of p2] {$u\at{p}$};
+        \draw[oedge] (p2) -- (v2);
+        \draw[->, orangec, thick] (v2.west) to[out=180, in=180, looseness=1.6]
+          node[left, font=\scriptsize] {$v\at{p}=u\at{p}$} (p2.west);
+      \end{tikzpicture}
+
+      \vspace{1mm}
+      {\scriptsize Exemplo com $v = T\at{nil}$: a sentinela passa a ter $p = u\at{p}$,
+      informação usada depois por \proc{RB-Delete-Fixup}.}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Remoção: \proc{RB-Delete}}
+  \begin{columns}[c]
+    \begin{column}{0.58\textwidth}
+      \begin{pseudo}[\scriptsize]{\proc{RB-Delete}$(T,z)$}
+        \li $y = z$
+        \li $\id{y-original-color} = y\at{color}$
+        \li \IF $z\at{left} \eqq T\at{nil}$
+        \li[1] $x = z\at{right}$
+        \li[1] \proc{RB-Transplant}$(T,z,z\at{right})$ \Cm{replace $z$ by its right child}
+        \li \ELSEIF $z\at{right} \eqq T\at{nil}$
+        \li[1] $x = z\at{left}$
+        \li[1] \proc{RB-Transplant}$(T,z,z\at{left})$ \Cm{replace $z$ by its left child}
+        \li \ELSE $y = \proc{Tree-Minimum}(z\at{right})$ \Cm{$y$ is $z$'s successor}
+        \li[1] $\id{y-original-color} = y\at{color}$
+        \li[1] $x = y\at{right}$
+        \li[1] \IF $y \neq z\at{right}$ \Cm{is $y$ farther down the tree?}
+        \li[2] \proc{RB-Transplant}$(T,y,y\at{right})$ \Cm{replace $y$ by its right child}
+        \li[2] $y\at{right} = z\at{right}$ \Cm{$z$'s right child becomes}
+        \li[2] $y\at{right}\at{p} = y$ \Cm{\quad $y$'s right child}
+        \li[1] \ELSE $x\at{p} = y$ \Cm{in case $x$ is $T\at{nil}$}
+        \li[1] \proc{RB-Transplant}$(T,z,y)$ \Cm{replace $z$ by its successor $y$}
+        \li[1] $y\at{left} = z\at{left}$ \Cm{and give $z$'s left child to $y$,}
+        \li[1] $y\at{left}\at{p} = y$ \Cm{\quad which had no left child}
+        \li[1] $y\at{color} = z\at{color}$
+        \li \IF $\id{y-original-color} \eqq \BLACK$ \Cm{if any violations occurred,}
+        \li[1] \proc{RB-Delete-Fixup}$(T,x)$ \Cm{\quad correct them}
+      \end{pseudo}
+    \end{column}
+    \begin{column}{0.4\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.85, transform shape]
+        % antes
+        \node[Cc] (z) at (0,0) {$z$};
+        \node[sub] (a) at (-0.9,-0.55) {$\alpha$};
+        \node[B] (r) at (0.9,-0.9) {$r$};
+        \node[sub] (g) at (1.6,-1.45) {$\gamma$};
+        \node[B] (y) at (0.3,-1.8) {$y$};
+        \node[nilsq] (n) at (-0.3,-2.6) {$T\at{nil}$};
+        \node[R] (x) at (0.9,-2.6) {$x$};
+        \draw[thick] (z) -- (a.apex); \draw[thick] (z) -- (r); \draw[thick] (r) -- (g.apex);
+        \draw[thick] (r) -- (y); \draw[thick] (y) -- (n); \draw[thick] (y) -- (x);
+        \node[font=\scriptsize, anchor=west] at (1.4,-2.6) {$x = y\at{right}$};
+        \node[font=\scriptsize, anchor=east] at (-0.05,-1.8) {\id{y-original-color}};
+        \draw[->, very thick] (0.3,-3.1) -- (0.3,-3.6);
+        % depois
+        \begin{scope}[yshift=-4.1cm]
+          \node[Cc] (y2) at (0,0) {$y$};
+          \node[sub] (a2) at (-0.9,-0.55) {$\alpha$};
+          \node[B] (r2) at (0.9,-0.9) {$r$};
+          \node[sub] (g2) at (1.6,-1.45) {$\gamma$};
+          \node[R, draw=orangec, line width=1.5pt] (x2) at (0.3,-1.8) {$x$};
+          \draw[thick] (y2) -- (a2.apex); \draw[thick] (y2) -- (r2); \draw[thick] (r2) -- (g2.apex);
+          \draw[oedge] (r2) -- (x2);
+          \node[font=\scriptsize, anchor=west] at (0.4,0.1) {recebe a cor de $z$};
+          \node[font=\scriptsize, anchor=east, align=right] at (-0.05,-1.8) {$x$ no lugar\\ original de $y$};
+        \end{scope}
+      \end{tikzpicture}
+
+      {\scriptsize $y$ é o nó removido ou movido; $x$ ocupa sua posição. Se $y$ era
+      preto, $x$ ganha um ``preto extra'' e \proc{RB-Delete-Fixup} é chamado.}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% \begin{frame}{Por que $y$ preto causa problemas?}
+%   \begin{itemize}
+%     \item Se $y$ era \alert{vermelho}, nada muda: alturas negras iguais, nenhum vermelho
+%           adjacente a outro, e $y$ não podia ser a raiz.
+%     \item Se $y$ era \alert{preto}, três problemas podem surgir:
+%       \begin{enumerate}
+%         \item $y$ era a raiz e um filho vermelho virou raiz (viola prop.\ 2);
+%         \item $x$ e seu novo pai são vermelhos (viola prop.\ 4);
+%         \item caminhos que passavam por $y$ têm um preto a menos (viola prop.\ 5).
+%       \end{enumerate}
+%     \item Ideia: transferir a ``negritude'' de $y$ para $x$, que fica com um
+%           \alert{preto extra}: \emph{duplamente preto} ou \emph{vermelho-e-preto}.
+%           A prop.\ 5 volta a valer, mas a prop.\ 1 é violada.
+%     \item \proc{RB-Delete-Fixup} sobe o preto extra pela árvore até que:
+%       \begin{enumerate}
+%         \item $x$ aponte para um nó vermelho-e-preto (que é pintado de preto);
+%         \item $x$ aponte para a raiz (o preto extra desaparece); ou
+%         \item após rotações e recolorações adequadas, o laço termine.
+%       \end{enumerate}
+%   \end{itemize}
+% \end{frame}
+
+\begin{frame}{\proc{RB-Delete-Fixup} (linhas 1--22: $x$ é filho esquerdo)}
+  \begin{columns}[t]
+    \begin{column}{0.5\textwidth}
+      \begin{pseudo}[\footnotesize]{\proc{RB-Delete-Fixup}$(T,x)$}
+        \li \WHILE $x \neq T\at{root}$ \AND $x\at{color} \eqq \BLACK$
+        \li[1] \IF $x \eqq x\at{p}\at{left}$ \Cm{is $x$ a left child?}
+        \li[2] $w = x\at{p}\at{right}$ \Cm{$w$ is $x$'s sibling}
+        \li[2] \IF $w\at{color} \eqq \RED$
+        \li[3] $w\at{color} = \BLACK$ \Cm{\alert{case 1}}
+        \li[3] $x\at{p}\at{color} = \RED$ \Cm{\alert{case 1}}
+        \li[3] \proc{Left-Rotate}$(T,x\at{p})$ \Cm{\alert{case 1}}
+        \li[3] $w = x\at{p}\at{right}$ \Cm{\alert{case 1}}
+        \li[2] \IF $w\at{left}\at{color} \eqq \BLACK$ \AND
+        \par\hspace*{5.0em} $w\at{right}\at{color} \eqq \BLACK$
+        \li[3] $w\at{color} = \RED$ \Cm{\alert{case 2}}
+        \li[3] $x = x\at{p}$ \Cm{\alert{case 2}}
+      \end{pseudo}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{pseudo}[\footnotesize]{}
+        \setcounter{pcline}{11}
+        \li[2] \ELSE
+        \li[3] \IF $w\at{right}\at{color} \eqq \BLACK$
+        \li[4] $w\at{left}\at{color} = \BLACK$ \Cm{\alert{case 3}}
+        \li[4] $w\at{color} = \RED$ \Cm{\alert{case 3}}
+        \li[4] \proc{Right-Rotate}$(T,w)$ \Cm{\alert{case 3}}
+        \li[4] $w = x\at{p}\at{right}$ \Cm{\alert{case 3}}
+        \li[3] $w\at{color} = x\at{p}\at{color}$ \Cm{\alert{case 4}}
+        \li[3] $x\at{p}\at{color} = \BLACK$ \Cm{\alert{case 4}}
+        \li[3] $w\at{right}\at{color} = \BLACK$ \Cm{\alert{case 4}}
+        \li[3] \proc{Left-Rotate}$(T,x\at{p})$ \Cm{\alert{case 4}}
+        \li[3] $x = T\at{root}$ \Cm{\alert{case 4}}
+      \end{pseudo}
+      \vspace{3mm}
+      {\scriptsize Dentro do laço, $x$ é sempre um nó não raiz duplamente preto, e
+      $w$ (irmão de $x$) não pode ser $T\at{nil}$.}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{\proc{RB-Delete-Fixup} (linhas 23--44: $x$ é filho direito)}
+  \begin{columns}[t]
+    \begin{column}{0.5\textwidth}
+      \begin{pseudo}[\footnotesize]{\proc{RB-Delete-Fixup}$(T,x)$ (cont.)}
+        \setcounter{pcline}{22}
+        \li[1] \ELSE \Cm{same as lines 3--22, but with ``right'' and ``left'' exchanged}
+        \li[2] $w = x\at{p}\at{left}$
+        \li[2] \IF $w\at{color} \eqq \RED$
+        \li[3] $w\at{color} = \BLACK$
+        \li[3] $x\at{p}\at{color} = \RED$
+        \li[3] \proc{Right-Rotate}$(T,x\at{p})$
+        \li[3] $w = x\at{p}\at{left}$
+        \li[2] \IF $w\at{right}\at{color} \eqq \BLACK$ \AND
+        \par\hspace*{5.0em} $w\at{left}\at{color} \eqq \BLACK$
+        \li[3] $w\at{color} = \RED$
+        \li[3] $x = x\at{p}$
+      \end{pseudo}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{pseudo}[\footnotesize]{}
+        \setcounter{pcline}{32}
+        \li[2] \ELSE
+        \li[3] \IF $w\at{left}\at{color} \eqq \BLACK$
+        \li[4] $w\at{right}\at{color} = \BLACK$
+        \li[4] $w\at{color} = \RED$
+        \li[4] \proc{Left-Rotate}$(T,w)$
+        \li[4] $w = x\at{p}\at{left}$
+        \li[3] $w\at{color} = x\at{p}\at{color}$
+        \li[3] $x\at{p}\at{color} = \BLACK$
+        \li[3] $w\at{left}\at{color} = \BLACK$
+        \li[3] \proc{Right-Rotate}$(T,x\at{p})$
+        \li[3] $x = T\at{root}$
+        \li $x\at{color} = \BLACK$
+      \end{pseudo}
+      \vspace{3mm}
+      {\scriptsize Só o caso 2 repete o laço ($x$ sobe, sem rotações). Casos 1, 3 e 4
+      terminam após $O(1)$ recolorações e no máximo 3 rotações: \proc{RB-Delete} é
+      $O(\lg n)$.}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{\proc{RB-Delete-Fixup}: casos 1 e 2}
+  \centering
+  \begin{tikzpicture}[scale=0.72, transform shape, level distance=9.5mm,
+      level 1/.style={sibling distance=26mm}, level 2/.style={sibling distance=13mm},
+      level 3/.style={sibling distance=8mm}, level 4/.style={sibling distance=7mm}]
+    \node[font=\small] at (-3.0,0.2) {(a) caso 1};
+    \node[B] at (0,0) {B}
+      child {node[DB] (x1) {A} child {node[sub] {$\alpha$}} child {node[sub] {$\beta$}}}
+      child {node[R] (w1) {D}
+        child {node[B] {C} child {node[sub] {$\gamma$}} child {node[sub] {$\delta$}}}
+        child {node[B] {E} child {node[sub] {$\varepsilon$}} child {node[sub] {$\zeta$}}}};
+    \node[left=0mm of x1] {$x$}; \node[right=0mm of w1] {$w$};
+    \draw[->, very thick] (3.0,-1.0) -- (4.0,-1.0);
+    \node[B] at (7.4,0) {D}
+      child {node[R] {B}
+        child {node[DB] (x2) {A} child {node[sub] {$\alpha$}} child {node[sub] {$\beta$}}}
+        child {node[B] (w2) {C} child {node[sub] {$\gamma$}} child {node[sub] {$\delta$}}}}
+      child {node[B] {E} child {node[sub] {$\varepsilon$}} child {node[sub] {$\zeta$}}};
+    \node[left=0mm of x2] {$x$}; \node[above right=-1mm and 0mm of w2] {novo $w$};
+
+    \node[font=\small] at (-3.0,-4.4) {(b) caso 2};
+    \node[Cc] at (0,-4.6) {B}
+      child {node[DB] (x3) {A} child {node[sub] {$\alpha$}} child {node[sub] {$\beta$}}}
+      child {node[B] (w3) {D}
+        child {node[B] {C} child {node[sub] {$\gamma$}} child {node[sub] {$\delta$}}}
+        child {node[B] {E} child {node[sub] {$\varepsilon$}} child {node[sub] {$\zeta$}}}};
+    \node[left=0mm of x3] {$x$}; \node[right=0mm of w3] {$w$};
+    \draw[->, very thick] (3.0,-5.6) -- (4.0,-5.6);
+    \node[Cc, double=white, double distance=0.9pt] (nx) at (7.4,-4.6) {B}
+      child {node[B] {A} child {node[sub] {$\alpha$}} child {node[sub] {$\beta$}}}
+      child {node[R] {D}
+        child {node[B] {C} child {node[sub] {$\gamma$}} child {node[sub] {$\delta$}}}
+        child {node[B] {E} child {node[sub] {$\varepsilon$}} child {node[sub] {$\zeta$}}}};
+    \node[above=0.5mm of nx] {novo $x$};
+  \end{tikzpicture}
+
+  {\scriptsize Caso 1 ($w$ vermelho): troca cores de $w$ e $x\at{p}$ e rotaciona $x\at{p}$ à
+  esquerda $\to$ casos 2, 3 ou 4. Caso 2 ($w$ preto, filhos pretos): tira um preto de $x$
+  e de $w$ e o passa para $x\at{p}$ ($x$ sobe). Nó marrom: cor $c$ qualquer; borda dupla: preto extra.}
+\end{frame}
+
+\begin{frame}{\proc{RB-Delete-Fixup}: casos 3 e 4}
+  \centering
+  \begin{tikzpicture}[scale=0.72, transform shape, level distance=9.5mm,
+      level 1/.style={sibling distance=26mm}, level 2/.style={sibling distance=13mm},
+      level 3/.style={sibling distance=8mm}, level 4/.style={sibling distance=7mm}]
+    \node[font=\small] at (-3.0,0.2) {(c) caso 3};
+    \node[Cc] at (0,0) {B}
+      child {node[DB] (x1) {A} child {node[sub] {$\alpha$}} child {node[sub] {$\beta$}}}
+      child {node[B] (w1) {D}
+        child {node[R] {C} child {node[sub] {$\gamma$}} child {node[sub] {$\delta$}}}
+        child {node[B] {E} child {node[sub] {$\varepsilon$}} child {node[sub] {$\zeta$}}}};
+    \node[left=0mm of x1] {$x$}; \node[right=0mm of w1] {$w$};
+    \draw[->, very thick] (3.0,-1.0) -- (4.0,-1.0);
+    \node[Cc] at (7.4,0) {B}
+      child {node[DB] (x2) {A} child {node[sub] {$\alpha$}} child {node[sub] {$\beta$}}}
+      child {node[B] (w2) {C} child {node[sub] {$\gamma$}}
+        child {node[R] {D} child {node[sub] {$\delta$}}
+          child {node[B] {E} child {node[sub] {$\varepsilon$}} child {node[sub] {$\zeta$}}}}};
+    \node[left=0mm of x2] {$x$}; \node[above right=-1mm and 0mm of w2] {novo $w$};
+
+    \node[font=\small] at (-3.0,-4.9) {(d) caso 4};
+    \node[Cc] at (0,-5.1) {B}
+      child {node[DB] (x3) {A} child {node[sub] {$\alpha$}} child {node[sub] {$\beta$}}}
+      child {node[B] (w3) {D}
+        child {node[Cc] {C} child {node[sub] {$\gamma$}} child {node[sub] {$\delta$}}}
+        child {node[R] {E} child {node[sub] {$\varepsilon$}} child {node[sub] {$\zeta$}}}};
+    \node[left=0mm of x3] {$x$}; \node[right=0mm of w3] {$w$};
+    \draw[->, very thick] (3.0,-6.1) -- (4.0,-6.1);
+    \node[Cc] (r4) at (7.4,-5.1) {D}
+      child {node[B] {B}
+        child {node[B] {A} child {node[sub] {$\alpha$}} child {node[sub] {$\beta$}}}
+        child {node[Cc] {C} child {node[sub] {$\gamma$}} child {node[sub] {$\delta$}}}}
+      child {node[B] {E} child {node[sub] {$\varepsilon$}} child {node[sub] {$\zeta$}}};
+    \node[above=0.5mm of r4, font=\small] {novo $x = T\at{root}$};
+  \end{tikzpicture}
+
+  {\scriptsize Caso 3 ($w$ preto, $w\at{left}$ vermelho, $w\at{right}$ preto): troca cores de
+  $w$ e $w\at{left}$ e rotaciona $w$ à direita $\to$ caso 4. Caso 4 ($w$ preto,
+  $w\at{right}$ vermelho): recolore, rotaciona $x\at{p}$ à esquerda e o preto extra
+  desaparece; o laço termina.}
+\end{frame}
+
+% =====================================================================
+\section{Fechamento}
+% =====================================================================
+
+\begin{frame}{Resumo das complexidades}
+  \centering\small
+  \begin{tabular}{@{}lccccc@{}}
+    \toprule
+    Estrutura & \proc{Search} & \proc{Insert} & \proc{Delete} & \proc{Min}/\proc{Max} & \proc{Succ}/\proc{Pred} \\
+    \midrule
+    Array não ordenado         & $\Theta(n)$ & $\Theta(1)$ & $\Theta(1)$ & $\Theta(n)$ & $\Theta(n)$ \\
+    Array ordenado             & $O(\lg n)$  & $\Theta(n)$ & $\Theta(n)$ & $\Theta(1)$ & $\Theta(1)$ \\
+    Stack / queue              & ---         & $O(1)$      & $O(1)$      & ---         & --- \\
+    Lista duplamente ligada    & $\Theta(n)$ & $O(1)$      & $O(1)$      & $\Theta(n)$ & $\Theta(n)$ \\
+    Hash table (encadeamento)  & $\Theta(1+\alpha)$ médio & $O(1)$ & $O(1)$ & --- & --- \\
+    Hash table (end.\ aberto)  & $\le \frac{1}{1-\alpha}$ sondas & $\le \frac{1}{1-\alpha}$ sondas & --- & --- & --- \\
+    Binary search tree         & $O(h)$ & $O(h)$ & $O(h)$ & $O(h)$ & $O(h)$ \\
+    Red-black tree             & $O(\lg n)$ & $O(\lg n)$ & $O(\lg n)$ & $O(\lg n)$ & $O(\lg n)$ \\
+    \bottomrule
+  \end{tabular}
+
+  % \vspace{3mm}
+  % \begin{itemize}\footnotesize
+  %   \item \proc{Delete} recebe um ponteiro para o elemento; remover por chave exige uma busca antes.
+  %   \item Hash tables: tempos médios sob hashing uniforme independente; pior caso $\Theta(n)$.
+  %   \item BST: $h$ pode ser $\Theta(n)$; red-black trees garantem $h = O(\lg n)$.
+  % \end{itemize}
+\end{frame}
+
+% \begin{frame}{Referência}
+%   \begin{itemize}
+%     \item T.~H. Cormen, C.~E. Leiserson, R.~L. Rivest, C.~Stein.
+%           \emph{Introduction to Algorithms}, 4\textsuperscript{a} ed.
+%           MIT Press, 2022. Parte III -- \emph{Data Structures}:
+%       \begin{itemize}
+%         \item Cap.~10 -- \emph{Elementary Data Structures};
+%         \item Cap.~11 -- \emph{Hash Tables};
+%         \item Cap.~12 -- \emph{Binary Search Trees};
+%         \item Cap.~13 -- \emph{Red-Black Trees}.
+%       \end{itemize}
+%   \end{itemize}
+%   \vfill
+%   \centering
+%   {\Large Obrigado!}
+% \end{frame}
+
+\end{document}
