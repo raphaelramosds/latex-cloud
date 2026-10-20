@@ -1924,257 +1924,86 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Remoção: os quatro casos}
-  \centering
-  \begin{tikzpicture}[scale=0.8, transform shape, level distance=10mm,
-      level 1/.style={sibling distance=12mm}, level 2/.style={sibling distance=14mm}]
-    % (a)
-    \node[font=\small] at (-1.0,0.3) {(a)};
-    \node[vtx] at (0,0) (qa) {$q$} child {node[hv] (za) {$z$} child {node[font=\scriptsize] {\NIL}} child {node[ov] (ra) {$r$}}};
-    \draw[->, thick] (1.4,-1.0) -- (2.1,-1.0);
-    \node[vtx] at (3.0,0) {$q$} child {node[ov] {$r$}};
-    % (b)
-    \node[font=\small] at (5.2,0.3) {(b)};
-    \node[vtx] at (6.2,0) {$q$} child {node[hv] {$z$} child {node[ov] {$l$}} child {node[font=\scriptsize] {\NIL}}};
-    \draw[->, thick] (7.6,-1.0) -- (8.3,-1.0);
-    \node[vtx] at (9.2,0) {$q$} child {node[ov] {$l$}};
-    % (c)
-    \node[font=\small] at (-1.0,-3.0) {(c)};
-    \node[vtx] at (0.4,-3.3) {$q$} child {node[hv] {$z$} child {node[vtx] {$l$}}
-        child {node[ov] {$y$} child {node[font=\scriptsize] {\NIL}} child {node[vtx] {$x$}}}};
-    \draw[->, thick] (2.1,-4.5) -- (2.8,-4.5);
-    \node[vtx] at (4.0,-3.3) {$q$} child {node[ov] {$y$} child {node[vtx] {$l$}} child {node[vtx] {$x$}}};
-    % (d)
-    \node[font=\small] at (5.2,-3.0) {(d)};
-    \node[vtx] at (6.6,-3.3) {$q$} child {node[hv] {$z$} child {node[vtx] {$l$}}
-        child {node[vtx] {$r$} child {node[ov] {$y$} child {node[font=\scriptsize] {\NIL}} child {node[vtx] {$x$}}} child[missing]}};
-    \draw[->, thick] (8.1,-4.5) -- (8.6,-4.5);
-    \node[vtx] at (9.4,-3.3) {$q$} child {node[hv] {$z$} child {node[vtx] {$l$}} child[missing]};
-    \node[ov] at (10.6,-4.3) {$y$} child[missing] child {node[vtx] {$r$} child {node[vtx] {$x$}} child[missing]};
-    \draw[->, thick] (11.6,-4.5) -- (12.1,-4.5);
-    \node[vtx] at (13.0,-3.3) {$q$} child {node[ov] {$y$} child {node[vtx] {$l$}} child {node[vtx] {$r$} child {node[vtx] {$x$}} child[missing]}};
-  \end{tikzpicture}
-
-  \vspace{1mm}
-  {\scriptsize $z$ (azul) é removido; o nó que ocupa sua posição está em laranja. $z$ pode ser
-  a raiz, filho esquerdo ou direito de $q$.}
-\end{frame}
-
-\begin{frame}{Sub-rotina \proc{Transplant}}
-  \begin{columns}[c]
-    \begin{column}{0.42\textwidth}
-      \begin{pseudo}[\small]{\proc{Transplant}$(T,u,v)$}
-        \li \IF $u\at{p} \eqq \NIL$
-        \li[1] $T\at{root} = v$
-        \li \ELSEIF $u \eqq u\at{p}\at{left}$
-        \li[1] $u\at{p}\at{left} = v$
-        \li \ELSE $u\at{p}\at{right} = v$
-        \li \IF $v \neq \NIL$
-        \li[1] $v\at{p} = u\at{p}$
-      \end{pseudo}
-      \vspace{2mm}
-      {\small Substitui a subárvore com raiz $u$ pela subárvore com raiz $v$ como filha
-      do pai de $u$. Não atualiza $v\at{left}$ nem $v\at{right}$ (responsabilidade de
-      quem chama).}
-    \end{column}
-    \begin{column}{0.56\textwidth}
-      \centering
-      \begin{tikzpicture}[level distance=10mm, sibling distance=14mm]
-        \node[vtx] (p1) at (0,0) {}
-          child {node[hv] (u1) {$u$} child {node[sub] {}}}
-          child {node[vtx] {} child {node[sub] {}}};
-        \node[font=\scriptsize, above=0mm of p1] {$u\at{p}$};
-        \node[ov] (v1) at (1.9,-1.4) {$v$} child {node[sub] {}};
-        \draw[->, very thick] (2.6,-1.2) -- (3.4,-1.2) node[midway, above, font=\scriptsize] {\proc{Transplant}};
-        \node[vtx] (p2) at (5.0,0) {}
-          child {node[ov] (v2) {$v$} child {node[sub] {}}}
-          child {node[vtx] {} child {node[sub] {}}};
-        \node[font=\scriptsize, above=0mm of p2] {$u\at{p}$};
-        \draw[oedge] (p2) -- (v2);
-        \node[hv] (u2) at (3.3,-2.4) {$u$};
-        \node[sub] at ($(u2.south)+(0,-0.35)$) {};
-        \draw[thick] (u2) -- ($(u2.south)+(0,-0.35)$);
-        \node[font=\scriptsize, anchor=north] at (3.3,-3.8) {(desligado)};
-      \end{tikzpicture}
-
-      \vspace{1mm}
-      {\scriptsize Linhas 1--2: $u$ é a raiz; 3--5: $u$ é filho esquerdo ou direito;
-      6--7: atualiza $v\at{p}$ se $v \neq \NIL$.}
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}{Remoção: \proc{Tree-Delete}}
-  \begin{columns}[c]
-    \begin{column}{0.6\textwidth}
-      \begin{pseudo}[\scriptsize]{\proc{Tree-Delete}$(T,z)$}
-        \li \IF $z\at{left} \eqq \NIL$
-        \li[1] \proc{Transplant}$(T,z,z\at{right})$ \Cm{replace $z$ by its right child}
-        \li \ELSEIF $z\at{right} \eqq \NIL$
-        \li[1] \proc{Transplant}$(T,z,z\at{left})$ \Cm{replace $z$ by its left child}
-        \li \ELSE $y = \proc{Tree-Minimum}(z\at{right})$ \Cm{$y$ is $z$'s successor}
-        \li[1] \IF $y \neq z\at{right}$ \Cm{is $y$ farther down the tree?}
-        \li[2] \proc{Transplant}$(T,y,y\at{right})$ \Cm{replace $y$ by its right child}
-        \li[2] $y\at{right} = z\at{right}$ \Cm{$z$'s right child becomes}
-        \li[2] $y\at{right}\at{p} = y$ \Cm{\quad $y$'s right child}
-        \li[1] \proc{Transplant}$(T,z,y)$ \Cm{replace $z$ by its successor $y$}
-        \li[1] $y\at{left} = z\at{left}$ \Cm{and give $z$'s left child to $y$,}
-        \li[1] $y\at{left}\at{p} = y$ \Cm{\quad which had no left child}
-      \end{pseudo}
-      \vspace{1mm}
-      {\footnotesize Tudo é $O(1)$ exceto \proc{Tree-Minimum}: $O(h)$.}
-    \end{column}
-    \begin{column}{0.38\textwidth}
-      \centering
-      {\scriptsize \proc{Tree-Delete}$(T,z)$, $z$ = nó 15 (caso (d)):}\\[1mm]
-      \begin{tikzpicture}[scale=0.62, transform shape, level distance=10mm,
-                          level 1/.style={sibling distance=30mm},
-                          level 2/.style={sibling distance=16mm},
-                          level 3/.style={sibling distance=9mm}]
-        \node[hv] (n15) {15}
-          child {node[vtx] {6} child {node[vtx] {3}} child {node[vtx] {7}}}
-          child {node[vtx] (n18) {18} child {node[ov] (n17) {17} child[missing] child {node[vtx] {17{,}5}}} child {node[vtx] {20}}};
-        \node[font=\large, right=1mm of n17] {$y$};
-        \node[font=\large, left=1mm of n15] {$z$};
-      \end{tikzpicture}
-
-      $\Downarrow$\\
-      \begin{tikzpicture}[scale=0.62, transform shape, level distance=10mm,
-                          level 1/.style={sibling distance=30mm},
-                          level 2/.style={sibling distance=16mm},
-                          level 3/.style={sibling distance=9mm}]
-        \node[ov] (n17) {17}
-          child {node[vtx] {6} child {node[vtx] {3}} child {node[vtx] {7}}}
-          child {node[vtx] (n18) {18} child {node[vtx] {17{,}5}} child {node[vtx] {20}}};
-      \end{tikzpicture}
-
-      {\scriptsize linhas 7--9: 17{,}5 ocupa o lugar de $y$; linhas 10--12: $y$ ocupa o lugar de $z$.}
-    \end{column}
-  \end{columns}
-\end{frame}
-
 % =====================================================================
 \section{Red-black trees}
 % =====================================================================
 
 \begin{frame}{Red-black trees (árvores rubro-negras)}
   \begin{itemize}
-    \item BSTs \alert{balanceadas}: garantem $O(\lg n)$ no pior caso.
+    \item BSTs \alert{balanceadas}: com $n$ nós, a árvore tem altura máxima $\lg(n)$.
     \item Um bit extra por nó: $color \in \{\RED, \BLACK\}$. Atributos: $color$, $key$,
           $left$, $right$, $p$.
-    \item Ponteiros \NIL\ são vistos como \alert{folhas} (nós externos); nós com chave são
-          internos.
   \end{itemize}
   \begin{block}{Propriedades rubro-negras}
     \begin{enumerate}
       \item Todo nó é vermelho ou preto.
-      \item A raiz é preta.
-      \item Toda folha (\NIL) é preta.
+      \item A raiz e as folhas (\NIL) são pretas.
       \item Se um nó é vermelho, ambos os filhos são pretos.
       \item Para cada nó, todos os caminhos simples dele até folhas descendentes contêm
             o mesmo número de nós pretos.
     \end{enumerate}
   \end{block}
-  \begin{itemize}
-    \item Nenhum caminho raiz--folha é mais que o dobro de outro: altura
-          $\le 2\lg(n+1) = O(\lg n)$.
-  \end{itemize}
 \end{frame}
 
 \begin{frame}{Exemplo de red-black tree}
   \centering
-  \begin{tikzpicture}[scale=0.82, transform shape, level distance=11mm,
-      level 1/.style={sibling distance=64mm}, level 2/.style={sibling distance=32mm},
-      level 3/.style={sibling distance=16mm}, level 4/.style={sibling distance=9mm},
-      level 5/.style={sibling distance=8mm},
+  \begin{tikzpicture}[scale=0.82, transform shape, x=4mm, y=10.5mm,
       bh/.style={font=\scriptsize, text=gray!50!black}]
-    \node[B] (n26) {26}
-      child {node[R] (n17) {17}
-        child {node[B] (n14) {14}
-          child {node[R] (n10) {10}
-            child {node[B] (n7) {7} child {node[R] (n3) {3}} child[missing]}
-            child {node[B] (n12) {12}}}
-          child {node[B] (n16) {16} child {node[R] (n15) {15}} child[missing]}}
-        child {node[B] (n21) {21}
-          child {node[B] (n19) {19} child[missing] child {node[R] (n20) {20}}}
-          child {node[B] (n23) {23}}}}
-      child {node[B] (n41) {41}
-        child {node[R] (n30) {30}
-          child {node[B] (n28) {28}}
-          child {node[B] (n38) {38} child {node[R] (n35) {35}} child {node[R] (n39) {39}}}}
-        child {node[B] (n47) {47}}};
+    % nós internos: chave/cor/posição em ordem/profundidade
+    \foreach \k/\c/\x/\d in {7/B/1/4, 10/R/3/3, 12/B/5/4, 14/B/7/2, 15/R/9/4, 16/B/11/3,
+                             17/R/13/1, 19/B/15/3, 20/R/17/4, 21/B/19/2, 23/B/21/3,
+                             26/B/23/0, 28/B/25/3, 30/R/27/2, 35/R/29/4, 38/B/31/3,
+                             39/R/33/4, 41/B/35/1, 47/B/37/2}
+      \node[\c] (n\k) at (\x,-\d) {\k};
+    \foreach \c/\p in {17/26, 41/26, 14/17, 21/17, 10/14, 16/14, 7/10, 12/10, 15/16,
+                       19/21, 23/21, 20/19, 30/41, 47/41, 28/30, 38/30, 35/38, 39/38}
+      \draw (n\p) -- (n\c);
+    % folhas NIL: posição em ordem/profundidade/pai
+    \foreach \x/\d/\p in {0/5/7, 2/5/7, 4/5/12, 6/5/12, 8/5/15, 10/5/15, 12/4/16,
+                          14/4/19, 16/5/20, 18/5/20, 20/4/23, 22/4/23, 24/4/28,
+                          26/4/28, 28/5/35, 30/5/35, 32/5/39, 34/5/39, 36/3/47, 38/3/47} {
+      \node[nilsq, minimum width=5.5mm, fill=white, text=black, draw=none, font=\footnotesize] (nil\x) at (\x,-\d) {\NIL};
+      \draw (n\p) -- (nil\x);
+    }
     \foreach \n/\h in {n26/3,n17/3,n41/2,n14/2,n21/2,n30/2,n47/1,n10/2,n16/1,n19/1,
-                       n23/1,n28/1,n38/1,n7/1,n12/1,n15/1,n20/1,n35/1,n39/1,n3/1} {
+                       n23/1,n28/1,n38/1,n7/1,n12/1,n15/1,n20/1,n35/1,n39/1} {
       \node[bh, anchor=south west] at ($(\n.north east)+(-0.08,-0.12)$) {\h};
     }
   \end{tikzpicture}
 
   \vspace{1mm}
   {\small Números em cinza: \alert{altura negra} $bh(x)$ --- nº de nós pretos em qualquer caminho
-  de $x$ (exclusive) até uma folha. As folhas \NIL\ foram omitidas.}
-\end{frame}
-
-\begin{frame}{A sentinela $T\at{nil}$}
-  \begin{columns}[c]
-    \begin{column}{0.5\textwidth}
-      \begin{itemize}
-        \item Para simplificar condições de contorno, uma única sentinela $T\at{nil}$
-              representa \emph{todas} as folhas \NIL\ e o pai da raiz.
-        \item $T\at{nil}\at{color} = \BLACK$; demais atributos ($p$, $left$, $right$, $key$)
-              são arbitrários.
-        \item Permite tratar um filho \NIL\ de $x$ como um nó comum cujo pai é $x$.
-        \item Consequência: \proc{Search}, \proc{Minimum}, \proc{Maximum}, \proc{Successor}
-              e \proc{Predecessor} rodam em $O(\lg n)$ (com \NIL\ trocado por $T\at{nil}$).
-        \item Mas \proc{Tree-Insert}/\proc{Tree-Delete} podem violar as propriedades $\Rightarrow$
-              precisamos de \alert{rotações} e \alert{recolorações} (\textit{fixups}).
-      \end{itemize}
-    \end{column}
-    \begin{column}{0.48\textwidth}
-      \centering
-      \begin{tikzpicture}[level distance=12mm, level 1/.style={sibling distance=26mm},
-                          level 2/.style={sibling distance=13mm}]
-        \node[B] (r) {7}
-          child {node[R] (a) {3}}
-          child {node[B] (b) {18} child {node[R] (c) {10}} child[missing]};
-        \node[nilsq, minimum width=14mm, minimum height=5mm, font=\scriptsize] (nil) at (0,-3.6) {$T\at{nil}$};
-        \foreach \n/\o in {a/-20,a/-60,c/-80,c/-100,b/-60} {
-          \draw[->, gray, thin] (\n) to[out=\o, in=90] (nil.north);
-        }
-        \draw[->, gray, thin] (r) to[out=150, in=180, looseness=1.4] (nil.west);
-      \end{tikzpicture}
-
-      {\scriptsize Todos os ponteiros para \NIL\ (inclusive $T\at{root}\at{p}$)
-      apontam para a sentinela.}
-    \end{column}
-  \end{columns}
+  de $x$ (exclusive) até uma folha. As folhas são os nós \NIL.}
 \end{frame}
 
 \begin{frame}{Rotações}
   \begin{columns}[c]
-    \begin{column}{0.4\textwidth}
+    \begin{column}{0.42\textwidth}
       \begin{itemize}\small
-        \item Operação local que \alert{preserva a propriedade de BST}, alterando apenas
-              ponteiros, em $O(1)$.
-        \item \proc{Left-Rotate}$(T,x)$: supõe $x\at{right} = y \neq T\at{nil}$; $y$ vira a
-              nova raiz da subárvore, $x$ vira filho esquerdo de $y$, e $\beta$
-              (filho esquerdo de $y$) vira filho direito de $x$.
-        \item \proc{Right-Rotate}$(T,y)$ é a inversa.
-        % \item Ordem em ordem preservada: $\alpha < x < \beta < y < \gamma$.
+        \item A rotação (para esquerda ou para direita) é um mudança local que altera apenas alguns ponteiros e é feita em $O(1)$.
+        \item Após as rotações, as \alert{propriedades de BST se mantêm}:
+              $\alpha < x < \beta < y < \gamma$ antes e depois.
       \end{itemize}
     \end{column}
-    \begin{column}{0.58\textwidth}
+    \begin{column}{0.56\textwidth}
       \centering
       \begin{tikzpicture}[level distance=11mm, level 1/.style={sibling distance=16mm},
                           level 2/.style={sibling distance=12mm}]
         \node[vtx] (y1) at (0,0) {$y$}
-          child {node[vtx] {$x$} child {node[sub] {$\alpha$}} child {node[sub] {$\beta$}}}
+          child {node[vtx] (x1) {$x$} child {node[sub] {$\alpha$}} child {node[sub] (b1) {$\beta$}}}
           child {node[sub] {$\gamma$}};
+        \draw[-{Stealth[length=2mm]}, thick, dashed, blue] (y1) -- (b1.apex);
+        \draw[-{Stealth[length=2mm]}, thick, dashed, blue] (x1.north west) to[bend left=45] (y1.west);
         \node[vtx] (x2) at (5.2,0) {$x$}
           child {node[sub] {$\alpha$}}
-          child {node[vtx] {$y$} child {node[sub] {$\beta$}} child {node[sub] {$\gamma$}}};
-        \draw[<-, very thick, hlb] (1.6,-0.6) -- (3.6,-0.6)
+          child {node[vtx] (y2) {$y$} child {node[sub] (b2) {$\beta$}} child {node[sub] {$\gamma$}}};
+        \draw[-{Stealth[length=2mm]}, thick, dashed] (x2) -- (b2.apex);
+        \draw[-{Stealth[length=2mm]}, thick, dashed] (y2.north east) to[bend right=45] (x2.east);
+        \draw[-{Stealth[length=2mm]}, thick, blue] ($(y1)+(160:5.5mm)$) arc[start angle=160, end angle=20, radius=5.5mm];
+        \draw[-{Stealth[length=2mm]}, thick] ($(x2)+(20:5.5mm)$) arc[start angle=20, end angle=160, radius=5.5mm];
+        \draw[<-, very thick] (1.6,-0.6) -- (3.6,-0.6)
           node[midway, above, font=\scriptsize] {\proc{Left-Rotate}$(T,x)$};
-        \draw[->, very thick, orangec] (1.6,-1.3) -- (3.6,-1.3)
+        \draw[->, very thick, blue] (1.6,-1.3) -- (3.6,-1.3)
           node[midway, below, font=\scriptsize] {\proc{Right-Rotate}$(T,y)$};
       \end{tikzpicture}
     \end{column}
@@ -2183,623 +2012,65 @@
 
 \begin{frame}{\proc{Left-Rotate}}
   \begin{columns}[c]
-    \begin{column}{0.6\textwidth}
-      \begin{pseudo}[\scriptsize]{\proc{Left-Rotate}$(T,x)$}
+    \begin{column}{0.33\textwidth}
+      \begin{pseudo}[\small]{\proc{Left-Rotate}$(T,x)$}
         \li $y = x\at{right}$
-        \li $x\at{right} = y\at{left}$ \Cm{turn $y$'s left subtree into $x$'s right subtree}
-        \li \IF $y\at{left} \neq T\at{nil}$ \Cm{if $y$'s left subtree is not empty \dots}
-        \li[1] $y\at{left}\at{p} = x$ \Cm{\dots then $x$ becomes the parent of the subtree's root}
-        \li $y\at{p} = x\at{p}$ \Cm{$x$'s parent becomes $y$'s parent}
-        \li \IF $x\at{p} \eqq T\at{nil}$ \Cm{if $x$ was the root \dots}
-        \li[1] $T\at{root} = y$ \Cm{\dots then $y$ becomes the root}
-        \li \ELSEIF $x \eqq x\at{p}\at{left}$ \Cm{otherwise, if $x$ was a left child \dots}
-        \li[1] $x\at{p}\at{left} = y$ \Cm{\dots then $y$ becomes a left child}
-        \li \ELSE $x\at{p}\at{right} = y$ \Cm{otherwise, $x$ was a right child}
-        \li $y\at{left} = x$ \Cm{make $x$ become $y$'s left child}
+        \li $x\at{right} = y\at{left}$
+        \li \IF $y\at{left} \neq T\at{nil}$
+        \li[1] $y\at{left}\at{p} = x$
+        \li $y\at{p} = x\at{p}$
+        \li \IF $x\at{p} \eqq T\at{nil}$
+        \li[1] $T\at{root} = y$
+        \li \ELSEIF $x \eqq x\at{p}\at{left}$
+        \li[1] $x\at{p}\at{left} = y$
+        \li \ELSE $x\at{p}\at{right} = y$
+        \li $y\at{left} = x$
         \li $x\at{p} = y$
       \end{pseudo}
     \end{column}
-    \begin{column}{0.38\textwidth}
-      \centering
-      \begin{tikzpicture}[scale=0.8, transform shape]
-        \node[vtx] (pp) at (0,0.9) {};
-        \node[font=\scriptsize, above=0mm of pp] {$x\at{p}$};
-        \node[vtx] (x) at (0,0) {$x$};
-        \node[sub] (a) at (-0.6,-0.5) {$\alpha$};
-        \node[vtx] (y) at (0.6,-0.8) {$y$};
-        \node[sub] (b) at (0.15,-1.3) {$\beta$};
-        \node[sub] (g) at (1.05,-1.3) {$\gamma$};
-        \draw[thick] (pp) -- (x); \draw[thick] (x) -- (a.apex); \draw[thick] (x) -- (y);
-        \draw[thick] (y) -- (b.apex); \draw[thick] (y) -- (g.apex);
-        \draw[->, very thick] (1.6,-0.5) -- (2.3,-0.5);
-        \begin{scope}[xshift=3.6cm]
-          \node[vtx] (pp2) at (0,0.9) {};
-          \node[font=\scriptsize, above=0mm of pp2] {$x\at{p}$};
-          \node[vtx] (y2) at (0,0) {$y$};
-          \node[vtx] (x2) at (-0.6,-0.8) {$x$};
-          \node[sub] (a2) at (-1.05,-1.3) {$\alpha$};
-          \node[sub] (b2) at (-0.15,-1.3) {$\beta$};
-          \node[sub] (g2) at (0.6,-0.5) {$\gamma$};
-          \draw[oedge] (pp2) -- (y2); \draw[oedge] (y2) -- (x2); \draw[oedge] (x2) -- (b2.apex);
-          \draw[thick] (x2) -- (a2.apex); \draw[thick] (y2) -- (g2.apex);
+    \begin{column}{0.65\textwidth}
+      \raggedright
+      \begin{tikzpicture}[scale=0.8, transform shape, x=3.6mm, y=9mm,
+          rotcap/.style={font=\footnotesize, align=center, anchor=north}]
+        % (a) árvore inicial
+        \foreach \k/\s/\x/\d in {2/vtx/1/1, 5/vtx/2/0, 6/vtx/3/3, 8/vtx/4/2, 9/vtx/5/3,
+                                 10/vtx/6/1, 12/vtx/7/2}
+          \node[\s] (a\k) at (\x,-\d) {\k};
+        \foreach \c/\p in {2/5, 10/5, 8/10, 12/10, 6/8, 9/8}
+          \draw (a\p) -- (a\c);
+        \node[font=\small] at ($(a5)+(0,7.5mm)$) {$x$};
+        \node[font=\small] at ($(a10)+(0,5mm)$) {$y$};
+        \node[rotcap] at (4,-4.4) {(a) inicial};
+        \draw[-{Stealth[length=2mm]}, thick] ($(a5)+(20:5.5mm)$) arc[start angle=20, end angle=160, radius=5.5mm];
+        \draw[->, very thick] (8.1,-1.5) -- (10,-1.5);
+        % (b) após Left-Rotate(T, 5)
+        \begin{scope}[xshift=40mm]
+          \foreach \k/\s/\x/\d in {2/vtx/1/2, 5/vtx/2/1, 6/vtx/3/3, 8/vtx/4/2, 9/vtx/5/3,
+                                   10/vtx/6/0, 12/vtx/7/1}
+            \node[\s] (b\k) at (\x,-\d) {\k};
+          \foreach \c/\p in {5/10, 12/10, 2/5, 8/5, 6/8, 9/8}
+            \draw (b\p) -- (b\c);
+          \draw[-{Stealth[length=2mm]}, thick] ($(b8)+(-30:5.5mm)$) arc[start angle=-30, end angle=110, radius=5.5mm];
+          \node[font=\small] at ($(b8)+(0,7.5mm)$) {$x$};
+          \node[font=\small] at ($(b9)+(5mm,0)$) {$y$};
+          \node[rotcap] at (4,-4.4) {(b) após\\\proc{Left-Rotate}$(T,5)$};
+          \draw[->, very thick] (8.1,-1.5) -- (10,-1.5);
+        \end{scope}
+        % (c) após Left-Rotate(T, 8)
+        \begin{scope}[xshift=80mm]
+          \foreach \k/\s/\x/\d in {2/vtx/1/2, 5/vtx/2/1, 6/vtx/3/4, 8/vtx/4/3, 9/vtx/5/2,
+                                   10/vtx/6/0, 12/vtx/7/1}
+            \node[\s] (c\k) at (\x,-\d) {\k};
+          \foreach \c/\p in {5/10, 12/10, 2/5, 9/5, 8/9, 6/8}
+            \draw (c\p) -- (c\c);
+          \node[font=\small] at ($(c8)+(-5mm,0)$) {$x$};
+          \node[font=\small] at ($(c9)+(5mm,0)$) {$y$};
+          \node[rotcap] at (4,-4.4) {(c) após\\\proc{Left-Rotate}$(T,8)$};
         \end{scope}
       \end{tikzpicture}
 
-      \vspace{2mm}
-      {\scriptsize Laranja: ligações alteradas --- linhas 2--4: $\beta$ passa a ser filho de $x$;
-      5--10: $y$ assume o lugar de $x$ junto ao pai; 11--12: $x$ vira filho esquerdo de $y$.}
     \end{column}
   \end{columns}
-\end{frame}
-
-\begin{frame}{\proc{Right-Rotate} (simétrico) e exemplo}
-  \begin{columns}[c]
-    \begin{column}{0.38\textwidth}
-      \begin{pseudo}[\footnotesize]{\proc{Right-Rotate}$(T,y)$}
-        \li $x = y\at{left}$
-        \li $y\at{left} = x\at{right}$
-        \li \IF $x\at{right} \neq T\at{nil}$
-        \li[1] $x\at{right}\at{p} = y$
-        \li $x\at{p} = y\at{p}$
-        \li \IF $y\at{p} \eqq T\at{nil}$
-        \li[1] $T\at{root} = x$
-        \li \ELSEIF $y \eqq y\at{p}\at{right}$
-        \li[1] $y\at{p}\at{right} = x$
-        \li \ELSE $y\at{p}\at{left} = x$
-        \li $x\at{right} = y$
-        \li $y\at{p} = x$
-      \end{pseudo}
-      \vspace{1mm}
-      {\scriptsize Troca-se \emph{left} $\leftrightarrow$ \emph{right} e $x \leftrightarrow y$.}
-    \end{column}
-    \begin{column}{0.6\textwidth}
-      \centering
-      \begin{tikzpicture}[scale=0.6, transform shape, level distance=10mm,
-          level 1/.style={sibling distance=30mm}, level 2/.style={sibling distance=16mm},
-          level 3/.style={sibling distance=10mm}, level 4/.style={sibling distance=8mm},
-          level 5/.style={sibling distance=7mm}]
-        \node[vtx] {7}
-          child {node[vtx] {4} child {node[vtx] {3} child {node[vtx] {2}} child[missing]} child {node[vtx] {6}}}
-          child {node[hv] (x) {11} child {node[vtx] {9}}
-            child {node[ov] (y) {18}
-              child {node[vtx] {14} child {node[vtx] {12}} child {node[vtx] {17}}}
-              child {node[vtx] {19} child[missing] child {node[vtx] {22} child {node[vtx] {20}} child[missing]}}}};
-        \node[font=\large, right=1mm of x] {$x$};
-        \node[font=\large, right=1mm of y] {$y$};
-      \end{tikzpicture}
-
-      {\scriptsize $\Downarrow$ \proc{Left-Rotate}$(T,x)$}
-
-      \begin{tikzpicture}[scale=0.6, transform shape, level distance=10mm,
-          level 1/.style={sibling distance=30mm}, level 2/.style={sibling distance=16mm},
-          level 3/.style={sibling distance=10mm}, level 4/.style={sibling distance=8mm}]
-        \node[vtx] {7}
-          child {node[vtx] {4} child {node[vtx] {3} child {node[vtx] {2}} child[missing]} child {node[vtx] {6}}}
-          child {node[ov] (y) {18}
-            child {node[hv] (x) {11} child {node[vtx] {9}} child {node[vtx] {14} child {node[vtx] {12}} child {node[vtx] {17}}}}
-            child {node[vtx] {19} child[missing] child {node[vtx] {22} child {node[vtx] {20}} child[missing]}}};
-        \node[font=\large, left=1mm of x] {$x$};
-        \node[font=\large, right=1mm of y] {$y$};
-      \end{tikzpicture}
-
-      {\scriptsize O percurso em ordem é o mesmo antes e depois da rotação.}
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}{Inserção: \proc{RB-Insert}}
-  \begin{columns}[c]
-    \begin{column}{0.56\textwidth}
-      \begin{pseudo}[\footnotesize]{\proc{RB-Insert}$(T,z)$}
-        \li $x = T\at{root}$ \Cm{node being compared with $z$}
-        \li $y = T\at{nil}$ \Cm{$y$ will be parent of $z$}
-        \li \WHILE $x \neq T\at{nil}$ \Cm{descend until reaching the sentinel}
-        \li[1] $y = x$
-        \li[1] \IF $z\at{key} < x\at{key}$
-        \li[2] $x = x\at{left}$
-        \li[1] \ELSE $x = x\at{right}$
-        \li $z\at{p} = y$ \Cm{found the location}
-        \li \IF $y \eqq T\at{nil}$
-        \li[1] $T\at{root} = z$ \Cm{tree $T$ was empty}
-        \li \ELSEIF $z\at{key} < y\at{key}$
-        \li[1] $y\at{left} = z$
-        \li \ELSE $y\at{right} = z$
-        \li $z\at{left} = T\at{nil}$ \Cm{both of $z$'s children are the sentinel}
-        \li $z\at{right} = T\at{nil}$
-        \li $z\at{color} = \RED$ \Cm{the new node starts out red}
-        \li \proc{RB-Insert-Fixup}$(T,z)$ \Cm{correct any violations}
-      \end{pseudo}
-    \end{column}
-    \begin{column}{0.42\textwidth}
-      \centering
-      \begin{tikzpicture}[scale=0.78, transform shape, level distance=10mm,
-          level 1/.style={sibling distance=30mm}, level 2/.style={sibling distance=16mm},
-          level 3/.style={sibling distance=9mm}, level 4/.style={sibling distance=8mm}]
-        \node[B] (n11) {11}
-          child {node[R] (n2) {2} child {node[B] {1}}
-            child {node[B] (n7) {7} child {node[R] (n5) {5}
-                    child {node[R] (n4) {4} child {node[nilsq] {\NIL}} child {node[nilsq] {\NIL}}} child[missing]}
-                  child {node[R] {8}}}}
-          child {node[B] {14} child[missing] child {node[R] {15}}};
-        \draw[hedge] (n11) -- (n2); \draw[hedge] (n2) -- (n7); \draw[hedge] (n7) -- (n5);
-        \draw[oedge] (n5) -- (n4);
-        \node[R, draw=orangec, line width=1.5pt] at (n4) {4};
-        \node[font=\small, left=1mm of n4] {$z$};
-      \end{tikzpicture}
-
-      {\scriptsize Inserção da chave 4: desce como em \proc{Tree-Insert} (azul),
-      $z$ recebe filhos $T\at{nil}$ e cor vermelha. Como $z\at{p}=5$ também é vermelho,
-      a propriedade 4 é violada $\Rightarrow$ \proc{RB-Insert-Fixup}.}
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}{\proc{RB-Insert-Fixup}}
-  \begin{columns}[t]
-    \begin{column}{0.5\textwidth}
-      \begin{pseudo}[\footnotesize]{\proc{RB-Insert-Fixup}$(T,z)$}
-        \li \WHILE $z\at{p}\at{color} \eqq \RED$
-        \li[1] \IF $z\at{p} \eqq z\at{p}\at{p}\at{left}$ \Cm{is $z$'s parent a left child?}
-        \li[2] $y = z\at{p}\at{p}\at{right}$ \Cm{$y$ is $z$'s uncle}
-        \li[2] \IF $y\at{color} \eqq \RED$ \Cm{parent and uncle red?}
-        \li[3] $z\at{p}\at{color} = \BLACK$ \Cm{\alert{case 1}}
-        \li[3] $y\at{color} = \BLACK$ \Cm{\alert{case 1}}
-        \li[3] $z\at{p}\at{p}\at{color} = \RED$ \Cm{\alert{case 1}}
-        \li[3] $z = z\at{p}\at{p}$ \Cm{\alert{case 1}}
-        \li[2] \ELSE
-        \li[3] \IF $z \eqq z\at{p}\at{right}$ \Cm{\alert{case 2}}
-        \li[4] $z = z\at{p}$ \Cm{\alert{case 2}}
-        \li[4] \proc{Left-Rotate}$(T,z)$ \Cm{\alert{case 2}}
-        \li[3] $z\at{p}\at{color} = \BLACK$ \Cm{\alert{case 3}}
-        \li[3] $z\at{p}\at{p}\at{color} = \RED$ \Cm{\alert{case 3}}
-        \li[3] \proc{Right-Rotate}$(T,z\at{p}\at{p})$ \Cm{\alert{case 3}}
-      \end{pseudo}
-    \end{column}
-    \begin{column}{0.48\textwidth}
-      \begin{pseudo}[\footnotesize]{}
-        \setcounter{pcline}{15}
-        \li[1] \ELSE \Cm{same as lines 3--15, but with ``right'' and ``left'' exchanged}
-        \li[2] $y = z\at{p}\at{p}\at{left}$
-        \li[2] \IF $y\at{color} \eqq \RED$
-        \li[3] $z\at{p}\at{color} = \BLACK$
-        \li[3] $y\at{color} = \BLACK$
-        \li[3] $z\at{p}\at{p}\at{color} = \RED$
-        \li[3] $z = z\at{p}\at{p}$
-        \li[2] \ELSE
-        \li[3] \IF $z \eqq z\at{p}\at{left}$
-        \li[4] $z = z\at{p}$
-        \li[4] \proc{Right-Rotate}$(T,z)$
-        \li[3] $z\at{p}\at{color} = \BLACK$
-        \li[3] $z\at{p}\at{p}\at{color} = \RED$
-        \li[3] \proc{Left-Rotate}$(T,z\at{p}\at{p})$
-        \li $T\at{root}\at{color} = \BLACK$
-      \end{pseudo}
-      \vspace{2mm}
-      {\scriptsize Só as propriedades 2 (raiz vermelha) e 4 (vermelho com filho vermelho)
-      podem ser violadas. O laço só se repete no caso 1 ($z$ sobe dois níveis):
-      $O(\lg n)$ e no máximo 2 rotações.}
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}{\proc{RB-Insert-Fixup}: caso 1 --- o tio $y$ é vermelho}
-  \centering
-  \begin{tikzpicture}[scale=0.74, transform shape, level distance=10mm,
-      level 1/.style={sibling distance=26mm}, level 2/.style={sibling distance=13mm},
-      level 3/.style={sibling distance=10mm}]
-    \node[font=\small] at (-2.8,0.2) {(a)};
-    \node[B] at (0,0) {C}
-      child {node[R] {A} child {node[sub] {$\alpha$}}
-        child {node[R] (z1) {B} child {node[sub] {$\beta$}} child {node[sub] {$\gamma$}}}}
-      child {node[R] (y1) {D} child {node[sub] {$\delta$}} child {node[sub] {$\varepsilon$}}};
-    \node[right=0mm of z1] {$z$}; \node[right=0mm of y1] {$y$};
-    \draw[->, very thick] (2.9,-1.0) -- (3.8,-1.0);
-    \node[R] (nz) at (6.6,0) {C}
-      child {node[B] {A} child {node[sub] {$\alpha$}}
-        child {node[R] {B} child {node[sub] {$\beta$}} child {node[sub] {$\gamma$}}}}
-      child {node[B] {D} child {node[sub] {$\delta$}} child {node[sub] {$\varepsilon$}}};
-    \node[above=0.5mm of nz] {novo $z$};
-
-    \node[font=\small] at (-2.8,-4.4) {(b)};
-    \node[B] at (0,-4.6) {C}
-      child {node[R] {B} child {node[R] (z2) {A} child {node[sub] {$\alpha$}} child {node[sub] {$\beta$}}}
-        child {node[sub] {$\gamma$}}}
-      child {node[R] (y2) {D} child {node[sub] {$\delta$}} child {node[sub] {$\varepsilon$}}};
-    \node[left=0mm of z2] {$z$}; \node[right=0mm of y2] {$y$};
-    \draw[->, very thick] (2.9,-5.6) -- (3.8,-5.6);
-    \node[R] (nz2) at (6.6,-4.6) {C}
-      child {node[B] {B} child {node[R] {A} child {node[sub] {$\alpha$}} child {node[sub] {$\beta$}}}
-        child {node[sub] {$\gamma$}}}
-      child {node[B] {D} child {node[sub] {$\delta$}} child {node[sub] {$\varepsilon$}}};
-    \node[above=0.5mm of nz2] {novo $z$};
-  \end{tikzpicture}
-  \hfill
-  \begin{minipage}[b]{0.27\textwidth}
-    \footnotesize
-    Linhas 5--8: o avô $z\at{p}\at{p}$ (preto) transfere sua ``negritude'' para o pai e o
-    tio; o avô fica vermelho e o laço continua com $z = z\at{p}\at{p}$.
-
-    \vspace{2mm}
-    Vale tanto se $z$ é filho direito (a) quanto esquerdo (b). Subárvores
-    $\alpha,\dots,\varepsilon$ têm raiz preta e mesma altura negra.
-  \end{minipage}
-\end{frame}
-
-\begin{frame}{\proc{RB-Insert-Fixup}: casos 2 e 3 --- o tio $y$ é preto}
-  \centering
-  \begin{tikzpicture}[scale=0.85, transform shape, level distance=10mm,
-      level 1/.style={sibling distance=22mm}, level 2/.style={sibling distance=12mm},
-      level 3/.style={sibling distance=10mm}]
-    \node[B] at (0,0) {C}
-      child {node[R] {A} child {node[sub] {$\alpha$}}
-        child {node[R] (z1) {B} child {node[sub] {$\beta$}} child {node[sub] {$\gamma$}}}}
-      child {node[sub] (y1) {$\delta$}};
-    \node[right=0mm of z1] {$z$}; \node[right=0mm of y1.right corner] {$y$};
-    \draw[->, very thick] (1.8,-1.0) -- (3.1,-1.0) node[midway, above, font=\scriptsize] {caso 2};
-    \node[font=\scriptsize] at (2.45,-1.35) {\proc{Left-Rotate}};
-    \node[B] at (5.8,0) {C}
-      child {node[R] {B} child {node[R] (z2) {A} child {node[sub] {$\alpha$}} child {node[sub] {$\beta$}}}
-        child {node[sub] {$\gamma$}}}
-      child {node[sub] (y2) {$\delta$}};
-    \node[left=0mm of z2] {$z$}; \node[right=0mm of y2.right corner] {$y$};
-    \draw[->, very thick] (7.6,-1.0) -- (9.0,-1.0) node[midway, above, font=\scriptsize] {caso 3};
-    \node[font=\scriptsize] at (8.3,-1.35) {\proc{Right-Rotate}};
-    \node[B] at (11.2,0) {B}
-      child {node[R] (z3) {A} child {node[sub] {$\alpha$}} child {node[sub] {$\beta$}}}
-      child {node[R] {C} child {node[sub] {$\gamma$}} child {node[sub] {$\delta$}}};
-    \node[left=0mm of z3] {$z$};
-  \end{tikzpicture}
-
-  \vspace{4mm}
-  \begin{itemize}\small
-    \item \textbf{Caso 2} ($z$ é filho direito, linhas 10--12): $z = z\at{p}$ e rotação à
-          esquerda: transforma no caso 3 sem alterar alturas negras.
-    \item \textbf{Caso 3} ($z$ é filho esquerdo, linhas 13--15): recolore pai (preto) e avô
-          (vermelho) e rotaciona o avô à direita. Não há mais dois vermelhos seguidos:
-          o laço termina.
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{\proc{RB-Insert-Fixup}: exemplo completo (1/2)}
-  \centering
-  \begin{tikzpicture}[scale=0.78, transform shape, level distance=10mm,
-      level 1/.style={sibling distance=30mm}, level 2/.style={sibling distance=16mm},
-      level 3/.style={sibling distance=9mm}, level 4/.style={sibling distance=8mm}]
-    \node[font=\small] at (-3.2,0.3) {(a)};
-    \node[B] at (0,0) {11}
-      child {node[R] {2} child {node[B] {1}}
-        child {node[B] {7} child {node[R] {5} child {node[R] (z) {4}} child[missing]}
-                           child {node[R] (y) {8}}}}
-      child {node[B] {14} child[missing] child {node[R] {15}}};
-    \node[left=0mm of z] {$z$}; \node[right=0mm of y] {$y$};
-    \node[font=\small, align=center] at (0,-5.2) {$z$ e $z\at{p}$ vermelhos; tio $y$ vermelho\\ $\Rightarrow$ \alert{caso 1}};
-
-    \draw[->, very thick] (3.6,-1.5) -- (4.6,-1.5);
-
-    \node[font=\small] at (5.4,0.3) {(b)};
-    \node[B] at (8.6,0) {11}
-      child {node[R] {2} child {node[B] {1}}
-        child {node[R] (z) {7} child {node[B] {5} child {node[R] {4}} child[missing]}
-                           child {node[B] {8}}}}
-      child {node[B] (y) {14} child[missing] child {node[R] {15}}};
-    \node[left=0mm of z] {$z$}; \node[right=0mm of y] {$y$};
-    \node[font=\small, align=center] at (8.6,-5.2) {$z=7$ é filho direito; tio $y=14$ preto\\ $\Rightarrow$ \alert{caso 2}};
-  \end{tikzpicture}
-\end{frame}
-
-\begin{frame}{\proc{RB-Insert-Fixup}: exemplo completo (2/2)}
-  \centering
-  \begin{tikzpicture}[scale=0.78, transform shape, level distance=10mm,
-      level 1/.style={sibling distance=30mm}, level 2/.style={sibling distance=16mm},
-      level 3/.style={sibling distance=9mm}, level 4/.style={sibling distance=8mm}]
-    \node[font=\small] at (-3.2,0.3) {(c)};
-    \node[B] at (0,0) {11}
-      child {node[R] {7} child {node[R] (z) {2} child {node[B] {1}} child {node[B] {5} child {node[R] {4}} child[missing]}}
-                         child {node[B] {8}}}
-      child {node[B] (y) {14} child[missing] child {node[R] {15}}};
-    \node[left=0mm of z] {$z$}; \node[right=0mm of y] {$y$};
-    \node[font=\small, align=center] at (0,-5.2) {após \proc{Left-Rotate}$(T,2)$:\\ $z=2$ é filho esquerdo $\Rightarrow$ \alert{caso 3}};
-
-    \draw[->, very thick] (3.6,-1.5) -- (4.6,-1.5);
-
-    \node[font=\small] at (5.4,0.3) {(d)};
-    \node[B] at (8.6,0) {7}
-      child {node[R] (z) {2} child {node[B] {1}} child {node[B] {5} child {node[R] {4}} child[missing]}}
-      child {node[R] {11} child {node[B] {8}} child {node[B] {14} child[missing] child {node[R] {15}}}};
-    \node[left=0mm of z] {$z$};
-    \node[font=\small, align=center] at (8.6,-5.2) {recoloração e \proc{Right-Rotate}$(T,11)$:\\ árvore rubro-negra válida};
-  \end{tikzpicture}
-\end{frame}
-
-\begin{frame}{Remoção: \proc{RB-Transplant}}
-  \begin{columns}[c]
-    \begin{column}{0.42\textwidth}
-      \begin{pseudo}[\small]{\proc{RB-Transplant}$(T,u,v)$}
-        \li \IF $u\at{p} \eqq T\at{nil}$
-        \li[1] $T\at{root} = v$
-        \li \ELSEIF $u \eqq u\at{p}\at{left}$
-        \li[1] $u\at{p}\at{left} = v$
-        \li \ELSE $u\at{p}\at{right} = v$
-        \li $v\at{p} = u\at{p}$
-      \end{pseudo}
-      \vspace{3mm}
-      {\small Diferenças para \proc{Transplant}: usa $T\at{nil}$ em vez de \NIL\ e a
-      atribuição a $v\at{p}$ é \alert{incondicional} --- vale mesmo se $v = T\at{nil}$.}
-    \end{column}
-    \begin{column}{0.56\textwidth}
-      \centering
-      \begin{tikzpicture}[level distance=10mm, sibling distance=14mm]
-        \node[B] (p1) at (0,0) {}
-          child {node[R, draw=hlb, line width=1.5pt] (u1) {$u$}
-            child {node[nilsq] {$T\at{nil}$}} child {node[nilsq] {$T\at{nil}$}}}
-          child {node[B] {} child {node[sub] {}}};
-        \node[font=\scriptsize, above=0mm of p1] {$u\at{p}$};
-        \draw[->, very thick] (1.8,-1.2) -- (2.8,-1.2);
-        \node[B] (p2) at (4.6,0) {}
-          child {node[nilsq] (v2) {$T\at{nil}$}}
-          child {node[B] {} child {node[sub] {}}};
-        \node[font=\scriptsize, above=0mm of p2] {$u\at{p}$};
-        \draw[oedge] (p2) -- (v2);
-        \draw[->, orangec, thick] (v2.west) to[out=180, in=180, looseness=1.6]
-          node[left, font=\scriptsize] {$v\at{p}=u\at{p}$} (p2.west);
-      \end{tikzpicture}
-
-      \vspace{1mm}
-      {\scriptsize Exemplo com $v = T\at{nil}$: a sentinela passa a ter $p = u\at{p}$,
-      informação usada depois por \proc{RB-Delete-Fixup}.}
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}{Remoção: \proc{RB-Delete}}
-  \begin{columns}[c]
-    \begin{column}{0.58\textwidth}
-      \begin{pseudo}[\scriptsize]{\proc{RB-Delete}$(T,z)$}
-        \li $y = z$
-        \li $\id{y-original-color} = y\at{color}$
-        \li \IF $z\at{left} \eqq T\at{nil}$
-        \li[1] $x = z\at{right}$
-        \li[1] \proc{RB-Transplant}$(T,z,z\at{right})$ \Cm{replace $z$ by its right child}
-        \li \ELSEIF $z\at{right} \eqq T\at{nil}$
-        \li[1] $x = z\at{left}$
-        \li[1] \proc{RB-Transplant}$(T,z,z\at{left})$ \Cm{replace $z$ by its left child}
-        \li \ELSE $y = \proc{Tree-Minimum}(z\at{right})$ \Cm{$y$ is $z$'s successor}
-        \li[1] $\id{y-original-color} = y\at{color}$
-        \li[1] $x = y\at{right}$
-        \li[1] \IF $y \neq z\at{right}$ \Cm{is $y$ farther down the tree?}
-        \li[2] \proc{RB-Transplant}$(T,y,y\at{right})$ \Cm{replace $y$ by its right child}
-        \li[2] $y\at{right} = z\at{right}$ \Cm{$z$'s right child becomes}
-        \li[2] $y\at{right}\at{p} = y$ \Cm{\quad $y$'s right child}
-        \li[1] \ELSE $x\at{p} = y$ \Cm{in case $x$ is $T\at{nil}$}
-        \li[1] \proc{RB-Transplant}$(T,z,y)$ \Cm{replace $z$ by its successor $y$}
-        \li[1] $y\at{left} = z\at{left}$ \Cm{and give $z$'s left child to $y$,}
-        \li[1] $y\at{left}\at{p} = y$ \Cm{\quad which had no left child}
-        \li[1] $y\at{color} = z\at{color}$
-        \li \IF $\id{y-original-color} \eqq \BLACK$ \Cm{if any violations occurred,}
-        \li[1] \proc{RB-Delete-Fixup}$(T,x)$ \Cm{\quad correct them}
-      \end{pseudo}
-    \end{column}
-    \begin{column}{0.4\textwidth}
-      \centering
-      \begin{tikzpicture}[scale=0.85, transform shape]
-        % antes
-        \node[Cc] (z) at (0,0) {$z$};
-        \node[sub] (a) at (-0.9,-0.55) {$\alpha$};
-        \node[B] (r) at (0.9,-0.9) {$r$};
-        \node[sub] (g) at (1.6,-1.45) {$\gamma$};
-        \node[B] (y) at (0.3,-1.8) {$y$};
-        \node[nilsq] (n) at (-0.3,-2.6) {$T\at{nil}$};
-        \node[R] (x) at (0.9,-2.6) {$x$};
-        \draw[thick] (z) -- (a.apex); \draw[thick] (z) -- (r); \draw[thick] (r) -- (g.apex);
-        \draw[thick] (r) -- (y); \draw[thick] (y) -- (n); \draw[thick] (y) -- (x);
-        \node[font=\scriptsize, anchor=west] at (1.4,-2.6) {$x = y\at{right}$};
-        \node[font=\scriptsize, anchor=east] at (-0.05,-1.8) {\id{y-original-color}};
-        \draw[->, very thick] (0.3,-3.1) -- (0.3,-3.6);
-        % depois
-        \begin{scope}[yshift=-4.1cm]
-          \node[Cc] (y2) at (0,0) {$y$};
-          \node[sub] (a2) at (-0.9,-0.55) {$\alpha$};
-          \node[B] (r2) at (0.9,-0.9) {$r$};
-          \node[sub] (g2) at (1.6,-1.45) {$\gamma$};
-          \node[R, draw=orangec, line width=1.5pt] (x2) at (0.3,-1.8) {$x$};
-          \draw[thick] (y2) -- (a2.apex); \draw[thick] (y2) -- (r2); \draw[thick] (r2) -- (g2.apex);
-          \draw[oedge] (r2) -- (x2);
-          \node[font=\scriptsize, anchor=west] at (0.4,0.1) {recebe a cor de $z$};
-          \node[font=\scriptsize, anchor=east, align=right] at (-0.05,-1.8) {$x$ no lugar\\ original de $y$};
-        \end{scope}
-      \end{tikzpicture}
-
-      {\scriptsize $y$ é o nó removido ou movido; $x$ ocupa sua posição. Se $y$ era
-      preto, $x$ ganha um ``preto extra'' e \proc{RB-Delete-Fixup} é chamado.}
-    \end{column}
-  \end{columns}
-\end{frame}
-
-% \begin{frame}{Por que $y$ preto causa problemas?}
-%   \begin{itemize}
-%     \item Se $y$ era \alert{vermelho}, nada muda: alturas negras iguais, nenhum vermelho
-%           adjacente a outro, e $y$ não podia ser a raiz.
-%     \item Se $y$ era \alert{preto}, três problemas podem surgir:
-%       \begin{enumerate}
-%         \item $y$ era a raiz e um filho vermelho virou raiz (viola prop.\ 2);
-%         \item $x$ e seu novo pai são vermelhos (viola prop.\ 4);
-%         \item caminhos que passavam por $y$ têm um preto a menos (viola prop.\ 5).
-%       \end{enumerate}
-%     \item Ideia: transferir a ``negritude'' de $y$ para $x$, que fica com um
-%           \alert{preto extra}: \emph{duplamente preto} ou \emph{vermelho-e-preto}.
-%           A prop.\ 5 volta a valer, mas a prop.\ 1 é violada.
-%     \item \proc{RB-Delete-Fixup} sobe o preto extra pela árvore até que:
-%       \begin{enumerate}
-%         \item $x$ aponte para um nó vermelho-e-preto (que é pintado de preto);
-%         \item $x$ aponte para a raiz (o preto extra desaparece); ou
-%         \item após rotações e recolorações adequadas, o laço termine.
-%       \end{enumerate}
-%   \end{itemize}
-% \end{frame}
-
-\begin{frame}{\proc{RB-Delete-Fixup} (linhas 1--22: $x$ é filho esquerdo)}
-  \begin{columns}[t]
-    \begin{column}{0.5\textwidth}
-      \begin{pseudo}[\footnotesize]{\proc{RB-Delete-Fixup}$(T,x)$}
-        \li \WHILE $x \neq T\at{root}$ \AND $x\at{color} \eqq \BLACK$
-        \li[1] \IF $x \eqq x\at{p}\at{left}$ \Cm{is $x$ a left child?}
-        \li[2] $w = x\at{p}\at{right}$ \Cm{$w$ is $x$'s sibling}
-        \li[2] \IF $w\at{color} \eqq \RED$
-        \li[3] $w\at{color} = \BLACK$ \Cm{\alert{case 1}}
-        \li[3] $x\at{p}\at{color} = \RED$ \Cm{\alert{case 1}}
-        \li[3] \proc{Left-Rotate}$(T,x\at{p})$ \Cm{\alert{case 1}}
-        \li[3] $w = x\at{p}\at{right}$ \Cm{\alert{case 1}}
-        \li[2] \IF $w\at{left}\at{color} \eqq \BLACK$ \AND
-        \par\hspace*{5.0em} $w\at{right}\at{color} \eqq \BLACK$
-        \li[3] $w\at{color} = \RED$ \Cm{\alert{case 2}}
-        \li[3] $x = x\at{p}$ \Cm{\alert{case 2}}
-      \end{pseudo}
-    \end{column}
-    \begin{column}{0.48\textwidth}
-      \begin{pseudo}[\footnotesize]{}
-        \setcounter{pcline}{11}
-        \li[2] \ELSE
-        \li[3] \IF $w\at{right}\at{color} \eqq \BLACK$
-        \li[4] $w\at{left}\at{color} = \BLACK$ \Cm{\alert{case 3}}
-        \li[4] $w\at{color} = \RED$ \Cm{\alert{case 3}}
-        \li[4] \proc{Right-Rotate}$(T,w)$ \Cm{\alert{case 3}}
-        \li[4] $w = x\at{p}\at{right}$ \Cm{\alert{case 3}}
-        \li[3] $w\at{color} = x\at{p}\at{color}$ \Cm{\alert{case 4}}
-        \li[3] $x\at{p}\at{color} = \BLACK$ \Cm{\alert{case 4}}
-        \li[3] $w\at{right}\at{color} = \BLACK$ \Cm{\alert{case 4}}
-        \li[3] \proc{Left-Rotate}$(T,x\at{p})$ \Cm{\alert{case 4}}
-        \li[3] $x = T\at{root}$ \Cm{\alert{case 4}}
-      \end{pseudo}
-      \vspace{3mm}
-      {\scriptsize Dentro do laço, $x$ é sempre um nó não raiz duplamente preto, e
-      $w$ (irmão de $x$) não pode ser $T\at{nil}$.}
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}{\proc{RB-Delete-Fixup} (linhas 23--44: $x$ é filho direito)}
-  \begin{columns}[t]
-    \begin{column}{0.5\textwidth}
-      \begin{pseudo}[\footnotesize]{\proc{RB-Delete-Fixup}$(T,x)$ (cont.)}
-        \setcounter{pcline}{22}
-        \li[1] \ELSE \Cm{same as lines 3--22, but with ``right'' and ``left'' exchanged}
-        \li[2] $w = x\at{p}\at{left}$
-        \li[2] \IF $w\at{color} \eqq \RED$
-        \li[3] $w\at{color} = \BLACK$
-        \li[3] $x\at{p}\at{color} = \RED$
-        \li[3] \proc{Right-Rotate}$(T,x\at{p})$
-        \li[3] $w = x\at{p}\at{left}$
-        \li[2] \IF $w\at{right}\at{color} \eqq \BLACK$ \AND
-        \par\hspace*{5.0em} $w\at{left}\at{color} \eqq \BLACK$
-        \li[3] $w\at{color} = \RED$
-        \li[3] $x = x\at{p}$
-      \end{pseudo}
-    \end{column}
-    \begin{column}{0.48\textwidth}
-      \begin{pseudo}[\footnotesize]{}
-        \setcounter{pcline}{32}
-        \li[2] \ELSE
-        \li[3] \IF $w\at{left}\at{color} \eqq \BLACK$
-        \li[4] $w\at{right}\at{color} = \BLACK$
-        \li[4] $w\at{color} = \RED$
-        \li[4] \proc{Left-Rotate}$(T,w)$
-        \li[4] $w = x\at{p}\at{left}$
-        \li[3] $w\at{color} = x\at{p}\at{color}$
-        \li[3] $x\at{p}\at{color} = \BLACK$
-        \li[3] $w\at{left}\at{color} = \BLACK$
-        \li[3] \proc{Right-Rotate}$(T,x\at{p})$
-        \li[3] $x = T\at{root}$
-        \li $x\at{color} = \BLACK$
-      \end{pseudo}
-      \vspace{3mm}
-      {\scriptsize Só o caso 2 repete o laço ($x$ sobe, sem rotações). Casos 1, 3 e 4
-      terminam após $O(1)$ recolorações e no máximo 3 rotações: \proc{RB-Delete} é
-      $O(\lg n)$.}
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}{\proc{RB-Delete-Fixup}: casos 1 e 2}
-  \centering
-  \begin{tikzpicture}[scale=0.72, transform shape, level distance=9.5mm,
-      level 1/.style={sibling distance=26mm}, level 2/.style={sibling distance=13mm},
-      level 3/.style={sibling distance=8mm}, level 4/.style={sibling distance=7mm}]
-    \node[font=\small] at (-3.0,0.2) {(a) caso 1};
-    \node[B] at (0,0) {B}
-      child {node[DB] (x1) {A} child {node[sub] {$\alpha$}} child {node[sub] {$\beta$}}}
-      child {node[R] (w1) {D}
-        child {node[B] {C} child {node[sub] {$\gamma$}} child {node[sub] {$\delta$}}}
-        child {node[B] {E} child {node[sub] {$\varepsilon$}} child {node[sub] {$\zeta$}}}};
-    \node[left=0mm of x1] {$x$}; \node[right=0mm of w1] {$w$};
-    \draw[->, very thick] (3.0,-1.0) -- (4.0,-1.0);
-    \node[B] at (7.4,0) {D}
-      child {node[R] {B}
-        child {node[DB] (x2) {A} child {node[sub] {$\alpha$}} child {node[sub] {$\beta$}}}
-        child {node[B] (w2) {C} child {node[sub] {$\gamma$}} child {node[sub] {$\delta$}}}}
-      child {node[B] {E} child {node[sub] {$\varepsilon$}} child {node[sub] {$\zeta$}}};
-    \node[left=0mm of x2] {$x$}; \node[above right=-1mm and 0mm of w2] {novo $w$};
-
-    \node[font=\small] at (-3.0,-4.4) {(b) caso 2};
-    \node[Cc] at (0,-4.6) {B}
-      child {node[DB] (x3) {A} child {node[sub] {$\alpha$}} child {node[sub] {$\beta$}}}
-      child {node[B] (w3) {D}
-        child {node[B] {C} child {node[sub] {$\gamma$}} child {node[sub] {$\delta$}}}
-        child {node[B] {E} child {node[sub] {$\varepsilon$}} child {node[sub] {$\zeta$}}}};
-    \node[left=0mm of x3] {$x$}; \node[right=0mm of w3] {$w$};
-    \draw[->, very thick] (3.0,-5.6) -- (4.0,-5.6);
-    \node[Cc, double=white, double distance=0.9pt] (nx) at (7.4,-4.6) {B}
-      child {node[B] {A} child {node[sub] {$\alpha$}} child {node[sub] {$\beta$}}}
-      child {node[R] {D}
-        child {node[B] {C} child {node[sub] {$\gamma$}} child {node[sub] {$\delta$}}}
-        child {node[B] {E} child {node[sub] {$\varepsilon$}} child {node[sub] {$\zeta$}}}};
-    \node[above=0.5mm of nx] {novo $x$};
-  \end{tikzpicture}
-
-  {\scriptsize Caso 1 ($w$ vermelho): troca cores de $w$ e $x\at{p}$ e rotaciona $x\at{p}$ à
-  esquerda $\to$ casos 2, 3 ou 4. Caso 2 ($w$ preto, filhos pretos): tira um preto de $x$
-  e de $w$ e o passa para $x\at{p}$ ($x$ sobe). Nó marrom: cor $c$ qualquer; borda dupla: preto extra.}
-\end{frame}
-
-\begin{frame}{\proc{RB-Delete-Fixup}: casos 3 e 4}
-  \centering
-  \begin{tikzpicture}[scale=0.72, transform shape, level distance=9.5mm,
-      level 1/.style={sibling distance=26mm}, level 2/.style={sibling distance=13mm},
-      level 3/.style={sibling distance=8mm}, level 4/.style={sibling distance=7mm}]
-    \node[font=\small] at (-3.0,0.2) {(c) caso 3};
-    \node[Cc] at (0,0) {B}
-      child {node[DB] (x1) {A} child {node[sub] {$\alpha$}} child {node[sub] {$\beta$}}}
-      child {node[B] (w1) {D}
-        child {node[R] {C} child {node[sub] {$\gamma$}} child {node[sub] {$\delta$}}}
-        child {node[B] {E} child {node[sub] {$\varepsilon$}} child {node[sub] {$\zeta$}}}};
-    \node[left=0mm of x1] {$x$}; \node[right=0mm of w1] {$w$};
-    \draw[->, very thick] (3.0,-1.0) -- (4.0,-1.0);
-    \node[Cc] at (7.4,0) {B}
-      child {node[DB] (x2) {A} child {node[sub] {$\alpha$}} child {node[sub] {$\beta$}}}
-      child {node[B] (w2) {C} child {node[sub] {$\gamma$}}
-        child {node[R] {D} child {node[sub] {$\delta$}}
-          child {node[B] {E} child {node[sub] {$\varepsilon$}} child {node[sub] {$\zeta$}}}}};
-    \node[left=0mm of x2] {$x$}; \node[above right=-1mm and 0mm of w2] {novo $w$};
-
-    \node[font=\small] at (-3.0,-4.9) {(d) caso 4};
-    \node[Cc] at (0,-5.1) {B}
-      child {node[DB] (x3) {A} child {node[sub] {$\alpha$}} child {node[sub] {$\beta$}}}
-      child {node[B] (w3) {D}
-        child {node[Cc] {C} child {node[sub] {$\gamma$}} child {node[sub] {$\delta$}}}
-        child {node[R] {E} child {node[sub] {$\varepsilon$}} child {node[sub] {$\zeta$}}}};
-    \node[left=0mm of x3] {$x$}; \node[right=0mm of w3] {$w$};
-    \draw[->, very thick] (3.0,-6.1) -- (4.0,-6.1);
-    \node[Cc] (r4) at (7.4,-5.1) {D}
-      child {node[B] {B}
-        child {node[B] {A} child {node[sub] {$\alpha$}} child {node[sub] {$\beta$}}}
-        child {node[Cc] {C} child {node[sub] {$\gamma$}} child {node[sub] {$\delta$}}}}
-      child {node[B] {E} child {node[sub] {$\varepsilon$}} child {node[sub] {$\zeta$}}};
-    \node[above=0.5mm of r4, font=\small] {novo $x = T\at{root}$};
-  \end{tikzpicture}
-
-  {\scriptsize Caso 3 ($w$ preto, $w\at{left}$ vermelho, $w\at{right}$ preto): troca cores de
-  $w$ e $w\at{left}$ e rotaciona $w$ à direita $\to$ caso 4. Caso 4 ($w$ preto,
-  $w\at{right}$ vermelho): recolore, rotaciona $x\at{p}$ à esquerda e o preto extra
-  desaparece; o laço termina.}
 \end{frame}
 
 % =====================================================================
