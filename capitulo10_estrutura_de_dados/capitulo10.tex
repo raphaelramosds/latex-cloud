@@ -2001,6 +2001,163 @@
   {\footnotesize Tudo é $O(1)$ exceto \proc{Tree-Minimum}: $O(h)$.}
 \end{frame}
 
+\begin{frame}{Caso 1 da remoção}
+  \begin{itemize}
+    \item $z$ \alert{não tem filho esquerdo}.
+    \item Substituímos $z$ por seu filho direito $r$, que pode ser \NIL:
+          \proc{Transplant}$(T, z, z\at{right})$.
+  \end{itemize}
+
+  \vspace{4mm}
+  {\centering
+  \begin{tikzpicture}[rel/.style={font=\small, text=gray!50!black}]
+    \node[vtx] (q1) at (0,0) {$q$};
+    \node[ov] (z1) at (-0.9,-1.1) {$z$};
+    \node[nilsq, minimum width=5.5mm, fill=white, text=black, draw=none, font=\footnotesize] (n1) at (-1.5,-2.2) {\NIL};
+    \node[sub] (r1) at (-0.3,-1.85) {$r$};
+    \draw[thick] (q1) -- (z1); \draw[thick] (z1) -- (n1); \draw[thick] (z1) -- (r1.apex);
+    \draw[->, very thick] (1.2,-1.1) -- (4.2,-1.1)
+      node[midway, above, font=\scriptsize] {\proc{Transplant}$(T, z, z\at{right})$};
+    \node[vtx] (q2) at (6,0) {$q$};
+    \node[sub] (r2) at (5.1,-0.75) {$r$};
+    \draw[thick] (q2) -- (r2.apex);
+  \end{tikzpicture}\par}
+
+  \vspace{4mm}
+  \begin{itemize}
+    \item Corresponde às linhas 1--2 de \proc{Tree-Delete}. Se $z$ é uma folha, também
+          cai neste caso ($z$ é substituído por \NIL).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Caso 2 da remoção}
+  \begin{itemize}
+    \item $z$ tem \alert{apenas o filho esquerdo}.
+    \item Substituímos $z$ por seu filho esquerdo $l$:
+          \proc{Transplant}$(T, z, z\at{left})$.
+  \end{itemize}
+
+  \vspace{4mm}
+  {\centering
+  \begin{tikzpicture}[rel/.style={font=\small, text=gray!50!black}]
+    \node[vtx] (q1) at (0,0) {$q$};
+    \node[ov] (z1) at (-0.9,-1.1) {$z$};
+    \node[sub] (l1) at (-1.5,-1.85) {$l$};
+    \node[nilsq, minimum width=5.5mm, fill=white, text=black, draw=none, font=\footnotesize] (n1) at (-0.3,-2.2) {\NIL};
+    \draw[thick] (q1) -- (z1); \draw[thick] (z1) -- (l1.apex); \draw[thick] (z1) -- (n1);
+    \draw[->, very thick] (1.2,-1.1) -- (4.2,-1.1)
+      node[midway, above, font=\scriptsize] {\proc{Transplant}$(T, z, z\at{left})$};
+    \node[vtx] (q2) at (6,0) {$q$};
+    \node[sub] (l2) at (5.1,-0.75) {$l$};
+    \draw[thick] (q2) -- (l2.apex);
+  \end{tikzpicture}\par}
+
+  \vspace{4mm}
+  \begin{itemize}
+    \item Corresponde às linhas 3--4 de \proc{Tree-Delete}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Caso 3 da remoção}
+  \begin{itemize}
+    \item $z$ tem \alert{dois filhos} e seu sucessor $y$ é o próprio $z\at{right}$
+          ($y$ não tem filho esquerdo).
+    \item Substituímos $z$ por $y$, que herda o filho esquerdo $l$ de $z$:
+          \proc{Transplant}$(T, z, y)$ e $y\at{left} = l$.
+  \end{itemize}
+
+  \vspace{2mm}
+  {\centering
+  \begin{tikzpicture}[rel/.style={font=\small, text=gray!50!black}]
+    \node[vtx] (q1) at (0,0) {$q$};
+    \node[ov] (z1) at (-0.9,-1.1) {$z$};
+    \node[sub] (l1) at (-1.5,-1.85) {$l$};
+    \node[hv] (y1) at (-0.3,-2.2) {$y$};
+    \node[nilsq, minimum width=5.5mm, fill=white, text=black, draw=none, font=\footnotesize] (n1) at (-0.9,-3.3) {\NIL};
+    \node[sub] (x1) at (0.3,-2.95) {$x$};
+    \draw[thick] (q1) -- (z1); \draw[thick] (z1) -- (l1.apex); \draw[thick] (z1) -- (y1);
+    \draw[thick] (y1) -- (n1); \draw[thick] (y1) -- (x1.apex);
+    \draw[->, very thick] (1.2,-1.6) -- (4.2,-1.6)
+      node[midway, above, font=\scriptsize, align=center]
+        {\proc{Transplant}$(T, z, y)$\\$y\at{left} = l$};
+    \node[vtx] (q2) at (6,0) {$q$};
+    \node[hv] (y2) at (5.1,-1.1) {$y$};
+    \node[sub] (l2) at (4.5,-1.85) {$l$};
+    \node[sub] (x2) at (5.7,-1.85) {$x$};
+    \draw[thick] (q2) -- (y2); \draw[thick] (y2) -- (l2.apex); \draw[thick] (y2) -- (x2.apex);
+  \end{tikzpicture}\par}
+
+  \vspace{2mm}
+  \begin{itemize}
+    \item Corresponde às linhas 5 e 10--12 de \proc{Tree-Delete} (o teste da linha 6
+          falha).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Caso 4 da remoção}
+  \begin{itemize}
+    \item $z$ tem \alert{dois filhos} e seu sucessor $y$ está \alert{mais abaixo} na
+          subárvore direita ($y \neq z\at{right}$).
+    \item Primeiro substituímos $y$ por seu filho direito $x$ e fazemos $r = z\at{right}$
+          virar filho direito de $y$.
+    \item Depois substituímos $z$ por $y$, que herda o filho esquerdo $l$ de $z$.
+  \end{itemize}
+
+  \vspace{1mm}
+  {\centering
+  \begin{tikzpicture}[scale=0.8, transform shape,
+                      rel/.style={font=\small, text=gray!50!black}]
+    % antes
+    \node[vtx] (q1) at (0,0) {$q$};
+    \node[ov] (z1) at (-1,-1.1) {$z$};
+    \node[sub] (l1) at (-1.6,-1.85) {$l$};
+    \node[vtx] (r1) at (-0.2,-2.2) {$r$};
+    \node[hv] (y1) at (-0.8,-3.3) {$y$};
+    \node[sub] (s1) at (0.4,-2.95) {};
+    \node[nilsq, minimum width=5.5mm, fill=white, text=black, draw=none, font=\footnotesize] (n1) at (-1.4,-4.4) {\NIL};
+    \node[sub] (x1) at (-0.2,-4.05) {$x$};
+    \draw[thick] (q1) -- (z1); \draw[thick] (z1) -- (l1.apex); \draw[thick] (z1) -- (r1);
+    \draw[thick] (r1) -- (y1); \draw[thick] (r1) -- (s1.apex);
+    \draw[thick] (y1) -- (n1); \draw[thick] (y1) -- (x1.apex);
+    \draw[->, very thick] (1.0,-2.2) -- (3.0,-2.2)
+      node[midway, above, font=\scriptsize, align=center]
+        {\proc{Transplant}$(T, y, x)$\\$y\at{right} = r$};
+    % passo intermediário
+    \begin{scope}[xshift=4.9cm]
+      \node[vtx] (q2) at (0,0) {$q$};
+      \node[ov] (z2) at (-1,-1.1) {$z$};
+      \node[sub] (l2) at (-1.6,-1.85) {$l$};
+      \node[hv] (y2) at (0.5,-1.5) {$y$};
+      \node[nilsq, minimum width=5.5mm, fill=white, text=black, draw=none, font=\footnotesize] (n2) at (-0.1,-2.6) {\NIL};
+      \node[vtx] (r2) at (1.1,-2.6) {$r$};
+      \node[sub] (x2) at (0.5,-3.35) {$x$};
+      \node[sub] (s2) at (1.7,-3.35) {};
+      \draw[thick] (q2) -- (z2); \draw[thick] (z2) -- (l2.apex);
+      \draw[thick] (y2) -- (n2); \draw[thick] (y2) -- (r2);
+      \draw[thick] (r2) -- (x2.apex); \draw[thick] (r2) -- (s2.apex);
+    \end{scope}
+    \draw[->, very thick] (7.2,-2.2) -- (9.2,-2.2)
+      node[midway, above, font=\scriptsize, align=center]
+        {\proc{Transplant}$(T, z, y)$\\$y\at{left} = l$};
+    % depois
+    \begin{scope}[xshift=11cm]
+      \node[vtx] (q3) at (0,0) {$q$};
+      \node[hv] (y3) at (-0.9,-1.1) {$y$};
+      \node[sub] (l3) at (-1.5,-1.85) {$l$};
+      \node[vtx] (r3) at (-0.2,-2.2) {$r$};
+      \node[sub] (x3) at (-0.8,-2.95) {$x$};
+      \node[sub] (s3) at (0.4,-2.95) {};
+      \draw[thick] (q3) -- (y3); \draw[thick] (y3) -- (l3.apex); \draw[thick] (y3) -- (r3);
+      \draw[thick] (r3) -- (x3.apex); \draw[thick] (r3) -- (s3.apex);
+    \end{scope}
+  \end{tikzpicture}\par}
+
+  \vspace{1mm}
+  \begin{itemize}
+    \item Corresponde às linhas 5--12 de \proc{Tree-Delete}.
+  \end{itemize}
+\end{frame}
+
 % =====================================================================
 \section{Red-black trees}
 % =====================================================================
