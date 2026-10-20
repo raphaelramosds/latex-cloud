@@ -2181,9 +2181,12 @@
             o mesmo número de nós pretos.
     \end{enumerate}
   \end{block}
+  \begin{alertblock}{Altura negra ($bh(x)$)}
+    Número de nós pretos em qualquer caminho de $x$ (exclusivo) até uma folha.
+  \end{alertblock}
 \end{frame}
 
-\begin{frame}{Exemplo de red-black tree}
+\begin{frame}{Exemplo de uma árvore rubro-negra}
   \centering
   \begin{tikzpicture}[scale=0.82, transform shape, x=4mm, y=10.5mm,
       bh/.style={font=\scriptsize, text=gray!50!black}]
@@ -2210,8 +2213,12 @@
   \end{tikzpicture}
 
   \vspace{1mm}
-  {\small Números em cinza: \alert{altura negra} $bh(x)$ --- nº de nós pretos em qualquer caminho
-  de $x$ (exclusive) até uma folha. As folhas são os nós \NIL.}
+  \raggedright
+  \begin{itemize}
+    \item A propriedade 4 é satisfeita: por exemplo, todos os caminhos possíveis de $21$ até as
+          folhas \NIL{} contêm \alert{1 nó preto} ($19$ ou $23$) antes de chegar à folha.
+  \end{itemize}
+
 \end{frame}
 
 \begin{frame}{Rotações}
