@@ -1990,18 +1990,18 @@
     \node[vtx] (y1) at (0,0) {$y$}
       child {node[vtx] (x1) {$x$} child {node[sub] {$\alpha$}} child {node[sub] (b1) {$\beta$}}}
       child {node[sub] {$\gamma$}};
-    \draw[-{Stealth[length=2mm]}, thick, dashed, blue] (y1) -- (b1.apex);
-    \draw[-{Stealth[length=2mm]}, thick, dashed, blue] (x1.north west) to[bend left=45] (y1.west);
+    \draw[-{Stealth[length=2mm]}, thick, dashed, red] (y1) -- (b1.apex);
+    \draw[-{Stealth[length=2mm]}, thick, dashed, red] (x1.north west) to[bend left=45] (y1.west);
     \node[vtx] (x2) at (6.5,0) {$x$}
       child {node[sub] {$\alpha$}}
       child {node[vtx] (y2) {$y$} child {node[sub] (b2) {$\beta$}} child {node[sub] {$\gamma$}}};
     \draw[-{Stealth[length=2mm]}, thick, dashed] (x2) -- (b2.apex);
     \draw[-{Stealth[length=2mm]}, thick, dashed] (y2.north east) to[bend right=45] (x2.east);
-    \draw[-{Stealth[length=2mm]}, thick, blue] ($(y1)+(160:5.5mm)$) arc[start angle=160, end angle=20, radius=5.5mm];
+    \draw[-{Stealth[length=2mm]}, thick, red] ($(y1)+(160:5.5mm)$) arc[start angle=160, end angle=20, radius=5.5mm];
     \draw[-{Stealth[length=2mm]}, thick] ($(x2)+(20:5.5mm)$) arc[start angle=20, end angle=160, radius=5.5mm];
     \draw[<-, very thick] (2.2,-0.6) -- (4.3,-0.6)
       node[midway, above, font=\scriptsize] {\proc{Left-Rotate}$(T,x)$};
-    \draw[->, very thick, blue] (2.2,-1.3) -- (4.3,-1.3)
+    \draw[->, very thick, red] (2.2,-1.3) -- (4.3,-1.3)
       node[midway, below, font=\scriptsize] {\proc{Right-Rotate}$(T,y)$};
   \end{tikzpicture}
 \end{frame}
