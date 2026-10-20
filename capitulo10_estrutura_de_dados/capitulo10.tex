@@ -205,24 +205,22 @@
 \end{frame}
 
 % =====================================================================
-\section{Introdução: conjuntos dinâmicos}
+\section{Introdução}
 % =====================================================================
 
-\begin{frame}{Conjuntos dinâmicos}
+\begin{frame}{Conjuntos dinâmicos e dicionários}
   \begin{columns}[c]
     \begin{column}{0.56\textwidth}
       \begin{itemize}
-        \item Conjuntos manipulados por algoritmos podem crescer, encolher ou
-              mudar ao longo do tempo: são conjuntos \alert{dinâmicos}.
-        \item Um conjunto dinâmico que suporta inserir, remover e testar
-              pertinência é chamado de \alert{dicionário}.
+        \item \textbf{Conjuntos dinâmicos}: conjuntos manipulados por algoritmos podem crescer, encolher ou
+              mudar ao longo do tempo.
+        \item \textbf{Dicionário:} um conjunto dinâmico que suporta inserir, remover e testar
+              pertinência.
         \item Cada elemento é um \alert{objeto}, acessado por meio de um ponteiro, contendo:
           \begin{itemize}
             \item uma \alert{chave} (\textit{key}) identificadora;
-            \item atributos manipulados pelas operações (p.\,ex.\ ponteiros).
+            \item atributos manipulados pelas operações (p.\,ex.\ ponteiros \textit{prev}, \textit{next}, etc).
           \end{itemize}
-        \item Algumas estruturas supõem chaves de um conjunto \alert{totalmente
-              ordenado} (mais fácil buscar máximo/mínimo e sucessor/antecessor).
       \end{itemize}
     \end{column}
     \begin{column}{0.42\textwidth}
@@ -243,27 +241,22 @@
 \end{frame}
 
 \begin{frame}{Operações em conjuntos dinâmicos}
-  \setbeamercolor{description item}{fg=black}
-  \begin{columns}[t]
-    \begin{column}{0.5\textwidth}
-      \textbf{Consultas} (\emph{queries})
-      \begin{description}\small
-        \item[\proc{Search}$(S,k)$] retorna um ponteiro $x$ para um elemento com
-             $x\at{key}=k$, ou \NIL.
-        \item[\proc{Minimum}$(S)$, \proc{Maximum}$(S)$] elemento de menor (maior) chave.
-        \item[\proc{Successor}$(S,x)$] próximo elemento maior que $x$, ou \NIL\ se $x$ é o máximo.
-        \item[\proc{Predecessor}$(S,x)$] próximo elemento menor que $x$, ou \NIL\ se $x$ é o mínimo.
-      \end{description}
-    \end{column}
-    \begin{column}{0.5\textwidth}
-      \textbf{Operações modificadoras}
-      \begin{description}\small
-        \item[\proc{Insert}$(S,x)$] adiciona ao conjunto o elemento apontado por $x$.
-        \item[\proc{Delete}$(S,x)$] dado um \emph{ponteiro} $x$ (não uma chave),
-             remove $x$ de $S$.
-      \end{description}
-    \end{column}
-  \end{columns}
+  \begin{itemize}
+    \item \textbf{Consultas} (\emph{queries})
+      \begin{itemize}
+        \item \proc{Search}$(S,k)$: retorna um ponteiro $x$ para um elemento com
+              $x\at{key}=k$, ou \NIL.
+        \item \proc{Minimum}$(S)$, \proc{Maximum}$(S)$: elemento de menor (maior) chave.
+        \item \proc{Successor}$(S,x)$: próximo elemento maior que $x$, ou \NIL\ se $x$ é o máximo.
+        \item \proc{Predecessor}$(S,x)$: próximo elemento menor que $x$, ou \NIL\ se $x$ é o mínimo.
+      \end{itemize}
+    \item \textbf{Operações modificadoras}
+      \begin{itemize}
+        \item \proc{Insert}$(S,x)$: adiciona ao conjunto o elemento apontado por $x$.
+        \item \proc{Delete}$(S,x)$: dado um \emph{ponteiro} $x$ (não uma chave),
+              remove $x$ de $S$.
+      \end{itemize}
+  \end{itemize}
 \end{frame}
 
 % \begin{frame}{Visão geral}
@@ -417,10 +410,6 @@
     \draw[ptrdot] (d3.center) -- (dc31.west);
     \node[font=\footnotesize, align=center] at (7.6,-4.0) {(d) column-major, um array por coluna\\$A[j][i]=M[i,j]$};
   \end{tikzpicture}
-
-  \vspace{1mm}
-  \small Representações com array único costumam ser mais eficientes; múltiplos arrays
-  são mais flexíveis (permitem \emph{ragged arrays}, linhas de tamanhos diferentes).
 \end{frame}
 
 % \begin{frame}{Matrizes: representação em blocos}
@@ -3024,8 +3013,17 @@
 \section{Fechamento}
 % =====================================================================
 
-\begin{frame}{Resumo das complexidades}
+\begin{frame}{Fechamento}
   \centering\small
+  \begin{itemize}
+    \item A escolha de qual estrutura de dados utilizar depende da sua aplicação
+    \item Sua aplicação... 
+    \begin{itemize}
+      \item Prioriza achar mínimo e máximo? \textit{arrays} ordenados
+      \item Realiza modificações com muita frequência? \textit{Red-black trees}
+      \item Prioriza eficiência no acesso? \textit{hash tables}
+    \end{itemize}
+  \end{itemize}
   \begin{tabular}{@{}lccccc@{}}
     \toprule
     Estrutura & \proc{Search} & \proc{Insert} & \proc{Delete} & \proc{Min}/\proc{Max} & \proc{Succ}/\proc{Pred} \\
