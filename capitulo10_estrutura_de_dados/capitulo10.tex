@@ -2220,8 +2220,8 @@
 
 \begin{frame}{Caso 2 da inserção}
   \begin{itemize}
-    \item $z\at{uncle}$ é \alert{preto} e $z$, $z\at{p}$ e $z\at{p}\at{p}$ formam um
-          \alert{triângulo}.
+    \item $z\at{uncle}$ é \alert{preto} e $z$, $z\at{p}$ e $z\at{p}\at{p}$ estão em
+          \alert{alinhamento triângulo}.
     \item Rotacionamos o pai ($z\at{p}$) na direção oposta a $z$; aqui,
           \proc{Left-Rotate}$(T, z\at{p})$.
     % \item O antigo pai passa a ser o novo $z$ ($z = z\at{p}$), e os três nós passam a
@@ -2260,8 +2260,8 @@
 
 \begin{frame}{Caso 3 da inserção}
   \begin{itemize}
-    \item $z\at{uncle}$ é \alert{preto} e $z$, $z\at{p}$ e $z\at{p}\at{p}$ formam uma
-          \alert{linha}.
+    \item $z\at{uncle}$ é \alert{preto} e $z$, $z\at{p}$ e $z\at{p}\at{p}$ estão em
+          \alert{alinhamento linha}.
     \item Rotacionamos o avô ($z\at{p}\at{p}$) na direção oposta a $z$; aqui,
           \proc{Right-Rotate}$(T, z\at{p}\at{p})$.
     \item Trocamos as cores do pai e do avô originais: $A$ fica preto e $B$ fica vermelho.
