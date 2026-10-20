@@ -2069,6 +2069,235 @@
   \end{columns}
 \end{frame}
 
+\begin{frame}{Hierarquia de nós em uma BST}
+  \begin{itemize}
+    \item Antes de comentar sobre inserção e remoção em árvores rubro-negras, falemos da
+          \alert{hierarquia de nós} em uma BST.
+    \item Tomando como referência o nó $Z$:
+          $B$ é o \alert{avô} (\emph{grandparent}) de $Z$ ($z\at{p}\at{p}$), $A$ é o \alert{pai} (\emph{parent}) de $Z$ ($z\at{p}$) e
+          $D$ é o \alert{tio} (\emph{uncle}) de $Z$ ($z\at{p}\at{p}\at{left}$).
+  \end{itemize}
+
+  \vspace{4mm}
+  \centering
+  \begin{tikzpicture}[level distance=13mm, level 1/.style={sibling distance=36mm},
+                      level 2/.style={sibling distance=20mm},
+                      rel/.style={font=\small, text=gray!50!black}]
+    \node[vtx] (B) {$B$}
+      child {node[vtx] (D) {$D$}}
+      child {node[vtx] (A) {$A$}
+        child[missing]
+        child {node[vtx] (Z) {$Z$}}};
+    \node[rel, right=2mm of B] {avô (\emph{grandparent}): $z\at{p}\at{p}$};
+    \node[rel, left=2mm of D] {tio (\emph{uncle}): $z\at{p}\at{p}\at{left}$};
+    \node[rel, right=2mm of A] {pai (\emph{parent}): $z\at{p}$};
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Inserção em árvores rubro-negras}
+  \begin{itemize}
+    \item Existem quatro casos de inserção, que serão comentados nos slides a seguir:
+      \begin{itemize}
+        \item \textbf{Caso 0:} $z$ é a raiz;
+        \item \textbf{Caso 1:} o tio de $z$ é vermelho;
+        \item \textbf{Caso 2:} o tio de $z$ é preto (alinhamento em \alert{triângulo});
+        \item \textbf{Caso 3:} o tio de $z$ é preto (alinhamento em \alert{linha}).
+      \end{itemize}
+  \end{itemize}
+
+  \vspace{4mm}
+  \begin{block}{Considerações}
+    \begin{enumerate}
+      \item Um novo nó $z$ é sempre inserido na cor \alert{vermelha}.
+      % \item Após inserido, \alert{recolore} (preto para vermelho e vice-versa) e
+      %       \alert{rotaciona} para corrigir violações das propriedades de árvore rubro-negra.
+      \item \proc{RB-Insert} faz a inserção do nó respeitando a propriedade de BST, e
+            \proc{RB-Insert-Fixup} trata os casos acima.
+    \end{enumerate}
+  \end{block}
+\end{frame}
+
+\begin{frame}{\proc{RB-Insert} e \proc{RB-Insert-Fixup}}
+  \begin{columns}[t]
+    \begin{column}{0.4\textwidth}
+      \begin{pseudo}[\footnotesize]{\proc{RB-Insert}$(T,z)$}
+        \li $x = T\at{root}$
+        \li $y = T\at{nil}$
+        \li \WHILE $x \neq T\at{nil}$
+        \li[1] $y = x$
+        \li[1] \IF $z\at{key} < x\at{key}$
+        \li[2] $x = x\at{left}$
+        \li[1] \ELSE $x = x\at{right}$
+        \li $z\at{p} = y$
+        \li \IF $y \eqq T\at{nil}$
+        \li[1] $T\at{root} = z$
+        \li \ELSEIF $z\at{key} < y\at{key}$
+        \li[1] $y\at{left} = z$
+        \li \ELSE $y\at{right} = z$
+        \li $z\at{left} = T\at{nil}$
+        \li $z\at{right} = T\at{nil}$
+        \li $z\at{color} = \RED$
+        \li \proc{RB-Insert-Fixup}$(T,z)$
+      \end{pseudo}
+    \end{column}
+    \begin{column}{0.58\textwidth}
+      \begin{pseudo}[\footnotesize]{\proc{RB-Insert-Fixup}$(T,z)$}
+        \li \WHILE $z\at{p}\at{color} \eqq \RED$
+        \li[1] \IF $z\at{p} \eqq z\at{p}\at{p}\at{left}$
+        \li[2] $y = z\at{p}\at{p}\at{right}$ \Cm{$y$ é o tio de $z$}
+        \li[2] \IF $y\at{color} \eqq \RED$
+        \li[3] $z\at{p}\at{color} = \BLACK$ \Cm{caso 1}
+        \li[3] $y\at{color} = \BLACK$ \Cm{caso 1}
+        \li[3] $z\at{p}\at{p}\at{color} = \RED$ \Cm{caso 1}
+        \li[3] $z = z\at{p}\at{p}$ \Cm{caso 1}
+        \li[2] \ELSE
+        \li[3] \IF $z \eqq z\at{p}\at{right}$ \Cm{caso 2}
+        \li[4] $z = z\at{p}$ \Cm{caso 2}
+        \li[4] \proc{Left-Rotate}$(T,z)$ \Cm{caso 2}
+        \li[3] $z\at{p}\at{color} = \BLACK$ \Cm{caso 3}
+        \li[3] $z\at{p}\at{p}\at{color} = \RED$ \Cm{caso 3}
+        \li[3] \proc{Right-Rotate}$(T,z\at{p}\at{p})$ \Cm{caso 3}
+        \li[1] \ELSE \Cm{igual às linhas 3--15, trocando \emph{left} e \emph{right}}
+        \li $T\at{root}\at{color} = \BLACK$ \Cm{caso 0}
+      \end{pseudo}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Caso 0 da inserção}
+  \begin{itemize}
+    \item $z$ é a raiz.
+    \item Simplesmente pintamos $z$ de \alert{preto}.
+  \end{itemize}
+
+  \vspace{6mm}
+  \centering
+  \begin{tikzpicture}[rel/.style={font=\small, text=gray!50!black}]
+    \node[R] (z1) at (0,0) {Z};
+    \node[rel, left=1mm of z1] {$z$};
+    \draw[->, very thick] (1.5,0) -- (3.5,0)
+      node[midway, above, font=\scriptsize] {pinta de preto};
+    \node[B] (z2) at (5,0) {Z};
+    \node[rel, left=1mm of z2] {$z$};
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Caso 1 da inserção}
+  \begin{itemize}
+    \item $z\at{uncle}$ é \alert{vermelho}.
+    \item Trocamos as cores do pai ($z\at{p}$), do avô ($z\at{p}\at{p}$) e do tio
+          ($z\at{p}\at{p}\at{right}$).
+    % \item O avô passa a ser o novo $z$ ($z = z\at{p}\at{p}$), pois ele pode violar as
+    %       propriedades com o seu pai.
+  \end{itemize}
+
+  \vspace{2mm}
+  {\centering
+  \begin{tikzpicture}[level distance=11mm, level 1/.style={sibling distance=18mm},
+                      level 2/.style={sibling distance=12mm},
+                      rel/.style={font=\small, text=gray!50!black}]
+    \node[B] (b1) at (0,0) {B}
+      child {node[R] (a1) {A} child {node[R] (z1) {Z}} child[missing]}
+      child {node[R] (c1) {C}};
+    \node[rel, left=1mm of z1] {$z$};
+    \node[rel, right=1mm of b1] {$z\at{p}\at{p}$};
+    \node[rel, below=0.5mm of c1] {$z\at{p}\at{p}\at{right}$};
+    \node[rel, left=1mm of a1] {$z\at{p}$};
+    \draw[->, very thick] (2.5,-1.1) -- (4.5,-1.1)
+      node[midway, above, font=\scriptsize] {recolore};
+    \node[R] (b2) at (7,0) {B}
+      child {node[B] (a2) {A} child {node[R] (z2) {Z}} child[missing]}
+      child {node[B] {C}};
+    \node[rel, right=1mm of b2] {novo $z$};
+  \end{tikzpicture}\par}
+
+  \vspace{2mm}
+  \begin{itemize}
+    \item A ilustração considera $z\at{p} = z\at{p}\at{p}\at{left}$ (linhas 2--15 de
+          \proc{RB-Insert-Fixup}); logo, o tio é $z\at{p}\at{p}\at{right}$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Caso 2 da inserção}
+  \begin{itemize}
+    \item $z\at{uncle}$ é \alert{preto} e $z$, $z\at{p}$ e $z\at{p}\at{p}$ formam um
+          \alert{triângulo}.
+    \item Rotacionamos o pai ($z\at{p}$) na direção oposta a $z$; aqui,
+          \proc{Left-Rotate}$(T, z\at{p})$.
+    % \item O antigo pai passa a ser o novo $z$ ($z = z\at{p}$), e os três nós passam a
+    %       formar uma \alert{linha} $\Rightarrow$ caso 3.
+  \end{itemize}
+
+  \vspace{2mm}
+  {\centering
+  \begin{tikzpicture}[level distance=11mm, level 1/.style={sibling distance=18mm},
+                      level 2/.style={sibling distance=12mm},
+                      rel/.style={font=\small, text=gray!50!black}]
+    \node[B] (b1) at (0,0) {B}
+      child {node[R] (a1) {A} child[missing] child {node[R] (z1) {Z}}}
+      child {node[B] (c1) {C}};
+    \node[rel, right=1mm of z1] {$z$};
+    \node[rel, right=1mm of b1] {$z\at{p}\at{p}$};
+    \node[rel, below=0.5mm of c1] {$z\at{p}\at{p}\at{right}$};
+    \node[rel, right=1mm of a1] {$z\at{p}$};
+    \draw[-{Stealth[length=2mm]}, thick] ($(a1)+(80:5.5mm)$) arc[start angle=80, end angle=210, radius=5.5mm];
+    \draw[rbred, line width=2pt, dashed, line cap=round, line join=round]
+      ($(b1)+(-0.55,0.15)$) -- ($(a1)+(-1.0,0)$) -- ($(z1)+(-0.75,-0.1)$);
+    \draw[->, very thick] (2.5,-1.1) -- (4.5,-1.1)
+      node[midway, above, font=\scriptsize] {\proc{Left-Rotate}$(T, z\at{p})$};
+    \node[B] (b2) at (7,0) {B}
+      child {node[R] (z2) {Z} child {node[R] (a2) {A}} child[missing]}
+      child {node[B] {C}};
+    \node[rel, left=1mm of a2] {novo $z$};
+  \end{tikzpicture}\par}
+
+  \vspace{2mm}
+  \begin{itemize}
+    \item A ilustração considera $z\at{p} = z\at{p}\at{p}\at{left}$ (linhas 2--15 de
+          \proc{RB-Insert-Fixup}); logo, o tio é $z\at{p}\at{p}\at{right}$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Caso 3 da inserção}
+  \begin{itemize}
+    \item $z\at{uncle}$ é \alert{preto} e $z$, $z\at{p}$ e $z\at{p}\at{p}$ formam uma
+          \alert{linha}.
+    \item Rotacionamos o avô ($z\at{p}\at{p}$) na direção oposta a $z$; aqui,
+          \proc{Right-Rotate}$(T, z\at{p}\at{p})$.
+    \item Trocamos as cores do pai e do avô originais: $A$ fica preto e $B$ fica vermelho.
+  \end{itemize}
+
+  \vspace{2mm}
+  {\centering
+  \begin{tikzpicture}[level distance=11mm, level 1/.style={sibling distance=18mm},
+                      level 2/.style={sibling distance=12mm},
+                      rel/.style={font=\small, text=gray!50!black}]
+    \node[B] (b1) at (0,0) {B}
+      child {node[R] (a1) {A} child {node[R] (z1) {Z}} child[missing]}
+      child {node[B] (c1) {C}};
+    \node[rel, left=1mm of z1] {$z$};
+    \node[rel, right=5mm of b1] {$z\at{p}\at{p}$};
+    \node[rel, below=0.5mm of c1] {$z\at{p}\at{p}\at{right}$};
+    \node[rel, right=1mm of a1] {$z\at{p}$};
+    \draw[-{Stealth[length=2mm]}, thick] ($(b1)+(140:5.5mm)$) arc[start angle=140, end angle=0, radius=5.5mm];
+    \draw[rbred, line width=2pt, dashed, line cap=round]
+      ($(b1)+(-0.6,0.4)$) -- ($(z1)+(-0.6,0.4)$);
+    \draw[->, very thick] (2.5,-1.1) -- (4.5,-1.1)
+      node[midway, above, font=\scriptsize, align=center]
+        {\proc{Right-Rotate}$(T, z\at{p}\at{p})$\\+ recolore};
+    \node[B] (a2) at (7,0) {A}
+      child {node[R] (z2) {Z}}
+      child {node[R] (b2) {B} child[missing] child {node[B] {C}}};
+    \node[rel, left=1mm of z2] {$z$};
+  \end{tikzpicture}\par}
+
+  \vspace{2mm}
+  \begin{itemize}
+    \item A ilustração considera $z\at{p} = z\at{p}\at{p}\at{left}$ (linhas 2--15 de
+          \proc{RB-Insert-Fixup}); logo, o tio é $z\at{p}\at{p}\at{right}$.
+  \end{itemize}
+\end{frame}
+
 % =====================================================================
 \section{Fechamento}
 % =====================================================================
