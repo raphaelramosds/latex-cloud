@@ -2313,7 +2313,8 @@
           \alert{hierarquia de nós} em uma BST.
     \item Tomando como referência o nó $Z$:
           $B$ é o \alert{avô} (\emph{grandparent}) de $Z$ ($z\at{p}\at{p}$), $A$ é o \alert{pai} (\emph{parent}) de $Z$ ($z\at{p}$) e
-          $D$ é o \alert{tio} (\emph{uncle}) de $Z$ ($z\at{p}\at{p}\at{left}$).
+          $D$ é o \alert{tio} (\emph{uncle}) de $Z$ ($z\at{p}\at{p}\at{left}$) e
+          $I$ é o \alert{irmão} (\emph{brother}) de $Z$ ($z\at{p}\at{left}$).
   \end{itemize}
 
   \vspace{4mm}
@@ -2324,11 +2325,12 @@
     \node[B] (B) {$B$}
       child {node[B] (D) {$D$}}
       child {node[R] (A) {$A$}
-        child[missing]
+        child {node[B] (I) {$I$}}
         child {node[R] (Z) {$Z$}}};
     \node[rel, right=2mm of B] {avô (\emph{grandparent}): $z\at{p}\at{p}$};
     \node[rel, left=2mm of D] {tio (\emph{uncle}): $z\at{p}\at{p}\at{left}$};
     \node[rel, right=2mm of A] {pai (\emph{parent}): $z\at{p}$};
+    \node[rel, left=2mm of I] {irmão (\emph{brother}): $z\at{p}\at{left}$};
   \end{tikzpicture}
 \end{frame}
 
@@ -2754,9 +2756,9 @@
 
 \begin{frame}{Recoloração: \proc{RB-Delete-Fixup}}
   \begin{itemize}
-    \item Se o nó removido (ou movido) era \alert{preto}, $x$ passa a carregar um
-          \alert{preto extra} (``duplamente preto''), e o laço de \proc{RB-Delete-Fixup}
-          tenta eliminá-lo.
+    % \item Se o nó removido (ou movido) era \alert{preto}, $x$ passa a carregar um
+    %       \alert{preto extra} (``duplamente preto''), e o laço de \proc{RB-Delete-Fixup}
+    %       tenta eliminá-lo.
     \item Sendo $w$ o irmão de $x$, existem quatro casos:
       \begin{itemize}
         \item \textbf{Caso 1:} $w$ é vermelho;
@@ -2779,7 +2781,7 @@
   \begin{itemize}
     \item O irmão $w$ de $x$ é \alert{vermelho}.
     \item Trocamos as cores de $w$ e $x\at{p}$ e fazemos \proc{Left-Rotate}$(T, x\at{p})$.
-    \item O novo irmão de $x$ é preto $\Rightarrow$ seguimos para o caso 2, 3 ou 4.
+    \item Se o novo irmão de $x$ é preto, então seguimos para o caso 2, 3 ou 4.
   \end{itemize}
 
   \vspace{2mm}
@@ -2833,7 +2835,7 @@
   \begin{itemize}
     \item $w$ é \alert{preto} e os \alert{dois filhos} de $w$ são \alert{pretos}.
     \item Pintamos $w$ de vermelho e subimos o preto extra: $x = x\at{p}$.
-    \item Se o novo $x$ é vermelho (como aqui), o laço termina e a linha 44 o pinta de preto.
+    \item Se o novo $x$ é vermelho, o laço termina e a linha 44 o pinta de preto.
   \end{itemize}
 
   \vspace{2mm}
@@ -2886,7 +2888,7 @@
   \begin{itemize}
     \item $w$ é \alert{preto}, $w\at{left}$ é \alert{vermelho} e $w\at{right}$ é \alert{preto}.
     \item Trocamos as cores de $w$ e $w\at{left}$ e fazemos \proc{Right-Rotate}$(T, w)$.
-    \item O novo irmão de $x$ tem filho direito vermelho $\Rightarrow$ caso 4.
+    \item Se o novo irmão de $x$ tem filho direito vermelho, então caso 4.
   \end{itemize}
 
   \vspace{2mm}
@@ -2908,6 +2910,7 @@
       \node[sub] (azeta) at (2.55,-2.95) {$\zeta$}; \draw (aE) -- (azeta.apex);
       \node[rel, left=1mm of aA] {$x$};
       \node[rel, right=1mm of aD] {$w$};
+      \draw[-{Stealth[length=2mm]}, thick] ($(aD)+(120:5.5mm)$) arc[start angle=120, end angle=35, radius=5.5mm];
     \end{scope}
     \draw[->, very thick] (3.3,-1.6) -- (6.0,-1.6)
       node[midway, above, font=\scriptsize, align=center]
@@ -2940,7 +2943,7 @@
   \begin{itemize}
     \item $w$ é \alert{preto} e $w\at{right}$ é \alert{vermelho}.
     \item $w$ recebe a cor de $x\at{p}$; $x\at{p}$ e $w\at{right}$ ficam pretos; \proc{Left-Rotate}$(T, x\at{p})$.
-    \item O preto extra é eliminado e fazemos $x = T\at{root}$: o laço termina.
+    \item Após isso, $x = T\at{root}$: o laço termina.
   \end{itemize}
 
   \vspace{2mm}
@@ -2962,6 +2965,7 @@
       \node[sub] (azeta) at (2.55,-2.95) {$\zeta$}; \draw (aE) -- (azeta.apex);
       \node[rel, left=1mm of aA] {$x$};
       \node[rel, right=1mm of aD] {$w$};
+      \draw[-{Stealth[length=2mm]}, thick] ($(aB)+(20:5.5mm)$) arc[start angle=20, end angle=160, radius=5.5mm];
     \end{scope}
     \draw[->, very thick] (3.3,-1.6) -- (6.0,-1.6)
       node[midway, above, font=\scriptsize, align=center]
