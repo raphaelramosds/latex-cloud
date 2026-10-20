@@ -2221,14 +2221,14 @@
   \centering
   \begin{tikzpicture}[level distance=11mm, level 1/.style={sibling distance=16mm},
                       level 2/.style={sibling distance=12mm}]
-    \node[vtx] (y1) at (0,0) {$y$}
-      child {node[vtx] (x1) {$x$} child {node[sub] {$\alpha$}} child {node[sub] (b1) {$\beta$}}}
+    \node[B] (y1) at (0,0) {$y$}
+      child {node[R] (x1) {$x$} child {node[sub] {$\alpha$}} child {node[sub] (b1) {$\beta$}}}
       child {node[sub] {$\gamma$}};
     \draw[-{Stealth[length=2mm]}, thick, dashed, red] (y1) -- (b1.apex);
     \draw[-{Stealth[length=2mm]}, thick, dashed, red] (x1.north west) to[bend left=45] (y1.west);
-    \node[vtx] (x2) at (6.5,0) {$x$}
+    \node[R] (x2) at (6.5,0) {$x$}
       child {node[sub] {$\alpha$}}
-      child {node[vtx] (y2) {$y$} child {node[sub] (b2) {$\beta$}} child {node[sub] {$\gamma$}}};
+      child {node[B] (y2) {$y$} child {node[sub] (b2) {$\beta$}} child {node[sub] {$\gamma$}}};
     \draw[-{Stealth[length=2mm]}, thick, dashed] (x2) -- (b2.apex);
     \draw[-{Stealth[length=2mm]}, thick, dashed] (y2.north east) to[bend right=45] (x2.east);
     \draw[-{Stealth[length=2mm]}, thick, red] ($(y1)+(160:5.5mm)$) arc[start angle=160, end angle=20, radius=5.5mm];
@@ -2263,8 +2263,8 @@
       \begin{tikzpicture}[scale=0.8, transform shape, x=3.6mm, y=9mm,
           rotcap/.style={font=\footnotesize, align=center, anchor=north}]
         % (a) árvore inicial
-        \foreach \k/\s/\x/\d in {2/vtx/1/1, 5/vtx/2/0, 6/vtx/3/3, 8/vtx/4/2, 9/vtx/5/3,
-                                 10/vtx/6/1, 12/vtx/7/2}
+        \foreach \k/\s/\x/\d in {2/B/1/1, 5/B/2/0, 6/R/3/3, 8/B/4/2, 9/R/5/3,
+                                 10/R/6/1, 12/B/7/2}
           \node[\s] (a\k) at (\x,-\d) {\k};
         \foreach \c/\p in {2/5, 10/5, 8/10, 12/10, 6/8, 9/8}
           \draw (a\p) -- (a\c);
@@ -2275,8 +2275,8 @@
         \draw[->, very thick] (8.1,-1.5) -- (10,-1.5);
         % (b) após Left-Rotate(T, 5)
         \begin{scope}[xshift=40mm]
-          \foreach \k/\s/\x/\d in {2/vtx/1/2, 5/vtx/2/1, 6/vtx/3/3, 8/vtx/4/2, 9/vtx/5/3,
-                                   10/vtx/6/0, 12/vtx/7/1}
+          \foreach \k/\s/\x/\d in {2/B/1/2, 5/B/2/1, 6/R/3/3, 8/B/4/2, 9/R/5/3,
+                                   10/R/6/0, 12/B/7/1}
             \node[\s] (b\k) at (\x,-\d) {\k};
           \foreach \c/\p in {5/10, 12/10, 2/5, 8/5, 6/8, 9/8}
             \draw (b\p) -- (b\c);
@@ -2288,8 +2288,8 @@
         \end{scope}
         % (c) após Left-Rotate(T, 8)
         \begin{scope}[xshift=80mm]
-          \foreach \k/\s/\x/\d in {2/vtx/1/2, 5/vtx/2/1, 6/vtx/3/4, 8/vtx/4/3, 9/vtx/5/2,
-                                   10/vtx/6/0, 12/vtx/7/1}
+          \foreach \k/\s/\x/\d in {2/B/1/2, 5/B/2/1, 6/R/3/4, 8/B/4/3, 9/R/5/2,
+                                   10/R/6/0, 12/B/7/1}
             \node[\s] (c\k) at (\x,-\d) {\k};
           \foreach \c/\p in {5/10, 12/10, 2/5, 9/5, 8/9, 6/8}
             \draw (c\p) -- (c\c);
@@ -2317,11 +2317,11 @@
   \begin{tikzpicture}[level distance=13mm, level 1/.style={sibling distance=36mm},
                       level 2/.style={sibling distance=20mm},
                       rel/.style={font=\small, text=gray!50!black}]
-    \node[vtx] (B) {$B$}
-      child {node[vtx] (D) {$D$}}
-      child {node[vtx] (A) {$A$}
+    \node[B] (B) {$B$}
+      child {node[B] (D) {$D$}}
+      child {node[R] (A) {$A$}
         child[missing]
-        child {node[vtx] (Z) {$Z$}}};
+        child {node[R] (Z) {$Z$}}};
     \node[rel, right=2mm of B] {avô (\emph{grandparent}): $z\at{p}\at{p}$};
     \node[rel, left=2mm of D] {tio (\emph{uncle}): $z\at{p}\at{p}\at{left}$};
     \node[rel, right=2mm of A] {pai (\emph{parent}): $z\at{p}$};
@@ -2532,6 +2532,458 @@
   \end{itemize}
 \end{frame}
 
+\begin{frame}{Remoção em árvores rubro-negras}
+  \begin{itemize}
+    \item A remoção de um nó $z$ contempla três casos, que serão comentados nos slides a
+          seguir:
+      \begin{itemize}
+        \item \textbf{Caso I:} o filho esquerdo de $z$ é \NIL;
+        \item \textbf{Caso II:} o filho direito de $z$ é \NIL;
+        \item \textbf{Caso III:} nenhum dos filhos de $z$ é \NIL.
+      \end{itemize}
+  \end{itemize}
+
+  \vspace{4mm}
+  \begin{block}{Considerações}
+    \begin{enumerate}
+      \item O método \proc{Transplant} aqui é chamado de \proc{RB-Transplant} (usa
+            $T\at{nil}$ no lugar de \NIL).
+      \item \proc{RB-Delete} remove o nó $z$, e \proc{RB-Delete-Fixup} corrige as
+            violações de cores e das propriedades de árvore rubro-negra.
+    \end{enumerate}
+  \end{block}
+\end{frame}
+
+\begin{frame}{\proc{RB-Delete} e \proc{RB-Delete-Fixup}}
+  \begin{columns}[t]
+    \begin{column}{0.44\textwidth}
+      \begin{pseudo}[\scriptsize]{\proc{RB-Delete}$(T,z)$}
+        \li $y = z$
+        \li $y$-$\id{original-color} = y\at{color}$
+        \li \IF $z\at{left} \eqq T\at{nil}$ \Cm{caso I}
+        \li[1] $x = z\at{right}$ \Cm{caso I}
+        \li[1] \proc{RB-Transplant}$(T,z,z\at{right})$ \Cm{caso I}
+        \li \ELSEIF $z\at{right} \eqq T\at{nil}$ \Cm{caso II}
+        \li[1] $x = z\at{left}$ \Cm{caso II}
+        \li[1] \proc{RB-Transplant}$(T,z,z\at{left})$ \Cm{caso II}
+        \li \ELSE $y = \proc{Tree-Minimum}(z\at{right})$ \Cm{caso III}
+        \li[1] $y$-$\id{original-color} = y\at{color}$ \Cm{caso III}
+        \li[1] $x = y\at{right}$ \Cm{caso III}
+        \li[1] \IF $y \neq z\at{right}$ \Cm{caso III}
+        \li[2] \proc{RB-Transplant}$(T,y,y\at{right})$ \Cm{caso III}
+        \li[2] $y\at{right} = z\at{right}$ \Cm{caso III}
+        \li[2] $y\at{right}\at{p} = y$ \Cm{caso III}
+        \li[1] \ELSE $x\at{p} = y$ \Cm{caso III}
+        \li[1] \proc{RB-Transplant}$(T,z,y)$ \Cm{caso III}
+        \li[1] $y\at{left} = z\at{left}$ \Cm{caso III}
+        \li[1] $y\at{left}\at{p} = y$ \Cm{caso III}
+        \li[1] $y\at{color} = z\at{color}$ \Cm{caso III}
+        \li \IF $y$-$\id{original-color} \eqq \BLACK$
+        \li[1] \proc{RB-Delete-Fixup}$(T,x)$
+      \end{pseudo}
+    \end{column}
+    \begin{column}{0.55\textwidth}
+      \begin{pseudo}[\scriptsize]{\proc{RB-Delete-Fixup}$(T,x)$}
+        \li \WHILE $x \neq T\at{root}$ \AND $x\at{color} \eqq \BLACK$
+        \li[1] \IF $x \eqq x\at{p}\at{left}$
+        \li[2] $w = x\at{p}\at{right}$ \Cm{$w$ é o irmão de $x$}
+        \li[2] \IF $w\at{color} \eqq \RED$
+        \li[3] $w\at{color} = \BLACK$ \Cm{caso 1}
+        \li[3] $x\at{p}\at{color} = \RED$ \Cm{caso 1}
+        \li[3] \proc{Left-Rotate}$(T,x\at{p})$ \Cm{caso 1}
+        \li[3] $w = x\at{p}\at{right}$ \Cm{caso 1}
+        \li[2] \IF $w\at{left}\at{color} \eqq \BLACK$ \AND $w\at{right}\at{color} \eqq \BLACK$
+        \li[3] $w\at{color} = \RED$ \Cm{caso 2}
+        \li[3] $x = x\at{p}$ \Cm{caso 2}
+        \li[2] \ELSE
+        \li[3] \IF $w\at{right}\at{color} \eqq \BLACK$
+        \li[4] $w\at{left}\at{color} = \BLACK$ \Cm{caso 3}
+        \li[4] $w\at{color} = \RED$ \Cm{caso 3}
+        \li[4] \proc{Right-Rotate}$(T,w)$ \Cm{caso 3}
+        \li[4] $w = x\at{p}\at{right}$ \Cm{caso 3}
+        \li[3] $w\at{color} = x\at{p}\at{color}$ \Cm{caso 4}
+        \li[3] $x\at{p}\at{color} = \BLACK$ \Cm{caso 4}
+        \li[3] $w\at{right}\at{color} = \BLACK$ \Cm{caso 4}
+        \li[3] \proc{Left-Rotate}$(T,x\at{p})$ \Cm{caso 4}
+        \li[3] $x = T\at{root}$ \Cm{caso 4}
+        \li[1] \ELSE \Cm{mesmo que as linhas 3--22, com \emph{right} e \emph{left} trocados}
+        \addtocounter{pcline}{20}%
+        \li $x\at{color} = \BLACK$
+      \end{pseudo}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Caso I da remoção (rubro-negra)}
+  \begin{itemize}
+    \item O filho esquerdo de $z$ é \alert{\NIL}.
+    \item Fazemos $x = z\at{right}$ e substituímos $z$ por $x$:
+          \proc{RB-Transplant}$(T, z, z\at{right})$.
+    \item Se a cor original de $z$ era \alert{preta}, chamamos
+          \proc{RB-Delete-Fixup}$(T, x)$.
+  \end{itemize}
+
+  \vspace{2mm}
+  {\centering
+  \begin{tikzpicture}[level distance=11mm, level 1/.style={sibling distance=24mm},
+                      level 2/.style={sibling distance=12mm},
+                      level 3/.style={sibling distance=9mm},
+                      rel/.style={font=\small, text=black},
+                      nil/.style={nilsq, minimum width=5.5mm, fill=white, text=black,
+                                  draw=none, font=\footnotesize}]
+    \node[B] (q1) at (0,0) {Q}
+      child {node[B] (z1) {Z}
+        child {node[nil] {\NIL}}
+        child {node[R] (x1) {X} child {node[nil] {\NIL}} child {node[nil] {\NIL}}}}
+      child {node[B] (s1) {S} child {node[nil] {\NIL}} child {node[nil] {\NIL}}};
+    \node[rel, left=1mm of z1] {$z$};
+    \node[rel, above right=0mm and 0mm of x1] {$x$};
+    \draw[->, very thick] (2.6,-1.1) -- (5.2,-1.1)
+      node[midway, above, font=\scriptsize] {\proc{RB-Transplant}$(T, z, z\at{right})$};
+    \node[B] (q2) at (7.6,0) {Q}
+      child {node[R] (x2) {X} child {node[nil] {\NIL}} child {node[nil] {\NIL}}}
+      child {node[B] (s2) {S} child {node[nil] {\NIL}} child {node[nil] {\NIL}}};
+    \node[rel, left=1mm of x2] {$x$};
+  \end{tikzpicture}\par}
+
+  \vspace{2mm}
+  \begin{itemize}
+    \item Corresponde às linhas 3--5 de \proc{RB-Delete}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Caso II da remoção (rubro-negra)}
+  \begin{itemize}
+    \item O filho direito de $z$ é \alert{\NIL}.
+    \item Fazemos $x = z\at{left}$ e substituímos $z$ por $x$:
+          \proc{RB-Transplant}$(T, z, z\at{left})$.
+    \item Se a cor original de $z$ era \alert{preta}, chamamos
+          \proc{RB-Delete-Fixup}$(T, x)$.
+  \end{itemize}
+
+  \vspace{2mm}
+  {\centering
+  \begin{tikzpicture}[level distance=11mm, level 1/.style={sibling distance=24mm},
+                      level 2/.style={sibling distance=12mm},
+                      level 3/.style={sibling distance=9mm},
+                      rel/.style={font=\small, text=black},
+                      nil/.style={nilsq, minimum width=5.5mm, fill=white, text=black,
+                                  draw=none, font=\footnotesize}]
+    \node[B] (q1) at (0,0) {Q}
+      child {node[B] (z1) {Z}
+        child {node[R] (x1) {X} child {node[nil] {\NIL}} child {node[nil] {\NIL}}}
+        child {node[nil] {\NIL}}}
+      child {node[B] (s1) {S} child {node[nil] {\NIL}} child {node[nil] {\NIL}}};
+    \node[rel, left=1mm of z1] {$z$};
+    \node[rel, left=1mm of x1] {$x$};
+    \draw[->, very thick] (2.6,-1.1) -- (5.2,-1.1)
+      node[midway, above, font=\scriptsize] {\proc{RB-Transplant}$(T, z, z\at{left})$};
+    \node[B] (q2) at (7.6,0) {Q}
+      child {node[R] (x2) {X} child {node[nil] {\NIL}} child {node[nil] {\NIL}}}
+      child {node[B] (s2) {S} child {node[nil] {\NIL}} child {node[nil] {\NIL}}};
+    \node[rel, left=1mm of x2] {$x$};
+  \end{tikzpicture}\par}
+
+  \vspace{2mm}
+  \begin{itemize}
+    \item Corresponde às linhas 6--8 de \proc{RB-Delete}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Caso III da remoção (rubro-negra)}
+  \begin{itemize}
+    \item \alert{Nenhum} dos filhos de $z$ é \NIL.
+    \item $y = \proc{Tree-Minimum}(z\at{right})$ ocupa o lugar de $z$ e
+          \alert{herda a cor} de $z$; $x = y\at{right}$ ocupa o lugar de $y$.
+    \item Se a cor original de $y$ era \alert{preta}, chamamos
+          \proc{RB-Delete-Fixup}$(T, x)$.
+  \end{itemize}
+
+  \vspace{1mm}
+  {\centering
+  \begin{tikzpicture}[scale=0.8, transform shape,
+                      rel/.style={font=\small, text=black},
+                      nil/.style={nilsq, minimum width=5.5mm, fill=white, text=black,
+                                  draw=none, font=\footnotesize}]
+    % antes
+    \node[B] (z1) at (0,0) {Z};
+    \node[B] (l1) at (-1.6,-1.1) {L};
+    \node[R] (r1) at (1.6,-1.1) {R};
+    \node[nil] at (-2.1,-2.2) {\NIL}; \node[nil] (ln1) at (-1.1,-2.2) {\NIL};
+    \node[B] (y1) at (0.7,-2.2) {Y};
+    \node[B] (w1) at (2.5,-2.2) {W};
+    \node[nil] (n1) at (0.25,-3.3) {\NIL}; \node[nil] (x1) at (1.15,-3.3) {\NIL};
+    \node[nil] (wa1) at (2.05,-3.3) {\NIL}; \node[nil] (wb1) at (2.95,-3.3) {\NIL};
+    \draw (z1) -- (l1); \draw (z1) -- (r1);
+    \draw (l1) -- (-2.1,-2.2); \draw (l1) -- (ln1);
+    \draw (r1) -- (y1); \draw (r1) -- (w1);
+    \draw (y1) -- (n1); \draw (y1) -- (x1); \draw (w1) -- (wa1); \draw (w1) -- (wb1);
+    \node[rel, left=1mm of z1] {$z$};
+    \node[rel, left=1mm of y1] {$y$};
+    \node[rel, below=0.5mm of x1] {$x$};
+    \draw[->, very thick] (3.5,-1.6) -- (6.9,-1.6)
+      node[midway, above, font=\scriptsize, align=center]
+        {\proc{RB-Transplant}$(T, y, x)$\\\proc{RB-Transplant}$(T, z, y)$\\
+         $y\at{color} = z\at{color}$};
+    % depois
+    \begin{scope}[xshift=9.4cm]
+      \node[B] (y2) at (0,0) {Y};
+      \node[B] (l2) at (-1.6,-1.1) {L};
+      \node[R] (r2) at (1.6,-1.1) {R};
+      \node[nil] (la2) at (-2.1,-2.2) {\NIL}; \node[nil] (lb2) at (-1.1,-2.2) {\NIL};
+      \node[nil] (x2) at (1.0,-2.2) {\NIL};
+      \node[B] (w2) at (2.2,-2.2) {W};
+      \node[nil] (wa2) at (1.75,-3.3) {\NIL}; \node[nil] (wb2) at (2.65,-3.3) {\NIL};
+      \draw (y2) -- (l2); \draw (y2) -- (r2); \draw (l2) -- (la2); \draw (l2) -- (lb2);
+      \draw (r2) -- (x2); \draw (r2) -- (w2); \draw (w2) -- (wa2); \draw (w2) -- (wb2);
+      \node[rel, left=1mm of y2] {$y$};
+      \node[rel, below=0.5mm of x2] {$x$};
+    \end{scope}
+  \end{tikzpicture}\par}
+
+  \vspace{1mm}
+  \begin{itemize}
+    \item Corresponde às linhas 9--22 de \proc{RB-Delete}. Aqui $Y$ era \alert{preto}:
+          remover um preto do caminho até $x$ exige \proc{RB-Delete-Fixup}$(T, x)$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Recoloração: \proc{RB-Delete-Fixup}}
+  \begin{itemize}
+    \item Se o nó removido (ou movido) era \alert{preto}, $x$ passa a carregar um
+          \alert{preto extra} (``duplamente preto''), e o laço de \proc{RB-Delete-Fixup}
+          tenta eliminá-lo.
+    \item Sendo $w$ o irmão de $x$, existem quatro casos:
+      \begin{itemize}
+        \item \textbf{Caso 1:} $w$ é vermelho;
+        \item \textbf{Caso 2:} $w$ é preto e os dois filhos de $w$ são pretos;
+        \item \textbf{Caso 3:} $w$ é preto, $w\at{left}$ é vermelho e $w\at{right}$ é preto;
+        \item \textbf{Caso 4:} $w$ é preto e $w\at{right}$ é vermelho.
+      \end{itemize}
+  \end{itemize}
+
+  \vspace{4mm}
+  \begin{block}{Considerações}
+    \begin{enumerate}
+      \item O laço termina quando $x$ é vermelho ou é a raiz; a linha 44 pinta $x$ de preto.
+      \item Nas ilustrações a seguir, $\alpha, \beta, \dots, \zeta$ são subárvores.
+    \end{enumerate}
+  \end{block}
+\end{frame}
+
+\begin{frame}{Caso 1 da recoloração: \proc{RB-Delete-Fixup}}
+  \begin{itemize}
+    \item O irmão $w$ de $x$ é \alert{vermelho}.
+    \item Trocamos as cores de $w$ e $x\at{p}$ e fazemos \proc{Left-Rotate}$(T, x\at{p})$.
+    \item O novo irmão de $x$ é preto $\Rightarrow$ seguimos para o caso 2, 3 ou 4.
+  \end{itemize}
+
+  \vspace{2mm}
+  {\centering
+  \begin{tikzpicture}[scale=0.75, transform shape,
+                      rel/.style={font=\small, text=black}]
+    \begin{scope}[xshift=0cm]
+      \node[B] (aB) at (0,0) {B};
+      \node[B] (aA) at (-1.5,-1.1) {A};
+      \node[R] (aD) at (1.5,-1.1) {D};
+      \node[B] (aC) at (0.8,-2.2) {C};
+      \node[B] (aE) at (2.2,-2.2) {E};
+      \draw (aB) -- (aA); \draw (aB) -- (aD); \draw (aD) -- (aC); \draw (aD) -- (aE);
+      \node[sub] (aalpha) at (-1.85,-1.85) {$\alpha$}; \draw (aA) -- (aalpha.apex);
+      \node[sub] (abeta) at (-1.15,-1.85) {$\beta$}; \draw (aA) -- (abeta.apex);
+      \node[sub] (agamma) at (0.45,-2.95) {$\gamma$}; \draw (aC) -- (agamma.apex);
+      \node[sub] (adelta) at (1.15,-2.95) {$\delta$}; \draw (aC) -- (adelta.apex);
+      \node[sub] (aepsilon) at (1.85,-2.95) {$\epsilon$}; \draw (aE) -- (aepsilon.apex);
+      \node[sub] (azeta) at (2.55,-2.95) {$\zeta$}; \draw (aE) -- (azeta.apex);
+      \node[rel, left=1mm of aA] {$x$};
+      \node[rel, right=1mm of aD] {$w$};
+    \end{scope}
+    \draw[->, very thick] (3.3,-1.6) -- (6.0,-1.6)
+      node[midway, above, font=\scriptsize, align=center]
+        {\proc{Left-Rotate}$(T, x\at{p})$\\+ recolore};
+    \begin{scope}[xshift=8.6cm]
+      \node[B] (bD) at (0,0) {D};
+      \node[R] (bB) at (-1.4,-1.1) {B};
+      \node[B] (bE) at (1.4,-1.1) {E};
+      \node[B] (bA) at (-2.1,-2.2) {A};
+      \node[B] (bC) at (-0.7,-2.2) {C};
+      \draw (bD) -- (bB); \draw (bD) -- (bE); \draw (bB) -- (bA); \draw (bB) -- (bC);
+      \node[sub] (balpha) at (-2.45,-2.95) {$\alpha$}; \draw (bA) -- (balpha.apex);
+      \node[sub] (bbeta) at (-1.75,-2.95) {$\beta$}; \draw (bA) -- (bbeta.apex);
+      \node[sub] (bgamma) at (-1.05,-2.95) {$\gamma$}; \draw (bC) -- (bgamma.apex);
+      \node[sub] (bdelta) at (-0.35,-2.95) {$\delta$}; \draw (bC) -- (bdelta.apex);
+      \node[sub] (bepsilon) at (1.05,-1.85) {$\epsilon$}; \draw (bE) -- (bepsilon.apex);
+      \node[sub] (bzeta) at (1.75,-1.85) {$\zeta$}; \draw (bE) -- (bzeta.apex);
+      \node[rel, left=1mm of bA] {$x$};
+      \node[rel, above right=0mm and 0mm of bC] {novo $w$};
+    \end{scope}
+  \end{tikzpicture}\par}
+
+  \vspace{2mm}
+  \begin{itemize}
+    \item Linhas 4--8. A ilustração considera $x = x\at{p}\at{left}$; o caso $x = x\at{p}\at{right}$ é simétrico.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Caso 2 da recoloração: \proc{RB-Delete-Fixup}}
+  \begin{itemize}
+    \item $w$ é \alert{preto} e os \alert{dois filhos} de $w$ são \alert{pretos}.
+    \item Pintamos $w$ de vermelho e subimos o preto extra: $x = x\at{p}$.
+    \item Se o novo $x$ é vermelho (como aqui), o laço termina e a linha 44 o pinta de preto.
+  \end{itemize}
+
+  \vspace{2mm}
+  {\centering
+  \begin{tikzpicture}[scale=0.75, transform shape,
+                      rel/.style={font=\small, text=black}]
+    \begin{scope}[xshift=0cm]
+      \node[R] (aB) at (0,0) {B};
+      \node[B] (aA) at (-1.5,-1.1) {A};
+      \node[B] (aD) at (1.5,-1.1) {D};
+      \node[B] (aC) at (0.8,-2.2) {C};
+      \node[B] (aE) at (2.2,-2.2) {E};
+      \draw (aB) -- (aA); \draw (aB) -- (aD); \draw (aD) -- (aC); \draw (aD) -- (aE);
+      \node[sub] (aalpha) at (-1.85,-1.85) {$\alpha$}; \draw (aA) -- (aalpha.apex);
+      \node[sub] (abeta) at (-1.15,-1.85) {$\beta$}; \draw (aA) -- (abeta.apex);
+      \node[sub] (agamma) at (0.45,-2.95) {$\gamma$}; \draw (aC) -- (agamma.apex);
+      \node[sub] (adelta) at (1.15,-2.95) {$\delta$}; \draw (aC) -- (adelta.apex);
+      \node[sub] (aepsilon) at (1.85,-2.95) {$\epsilon$}; \draw (aE) -- (aepsilon.apex);
+      \node[sub] (azeta) at (2.55,-2.95) {$\zeta$}; \draw (aE) -- (azeta.apex);
+      \node[rel, left=1mm of aA] {$x$};
+      \node[rel, right=1mm of aD] {$w$};
+    \end{scope}
+    \draw[->, very thick] (3.3,-1.6) -- (6.0,-1.6)
+      node[midway, above, font=\scriptsize, align=center]
+        {recolore\\$x = x\at{p}$};
+    \begin{scope}[xshift=8.6cm]
+      \node[R] (bB) at (0,0) {B};
+      \node[B] (bA) at (-1.5,-1.1) {A};
+      \node[R] (bD) at (1.5,-1.1) {D};
+      \node[B] (bC) at (0.8,-2.2) {C};
+      \node[B] (bE) at (2.2,-2.2) {E};
+      \draw (bB) -- (bA); \draw (bB) -- (bD); \draw (bD) -- (bC); \draw (bD) -- (bE);
+      \node[sub] (balpha) at (-1.85,-1.85) {$\alpha$}; \draw (bA) -- (balpha.apex);
+      \node[sub] (bbeta) at (-1.15,-1.85) {$\beta$}; \draw (bA) -- (bbeta.apex);
+      \node[sub] (bgamma) at (0.45,-2.95) {$\gamma$}; \draw (bC) -- (bgamma.apex);
+      \node[sub] (bdelta) at (1.15,-2.95) {$\delta$}; \draw (bC) -- (bdelta.apex);
+      \node[sub] (bepsilon) at (1.85,-2.95) {$\epsilon$}; \draw (bE) -- (bepsilon.apex);
+      \node[sub] (bzeta) at (2.55,-2.95) {$\zeta$}; \draw (bE) -- (bzeta.apex);
+      \node[rel, left=1mm of bB] {novo $x$};
+    \end{scope}
+  \end{tikzpicture}\par}
+
+  \vspace{2mm}
+  \begin{itemize}
+    \item Linhas 9--11. $x\at{p}$ pode ter qualquer cor. A ilustração considera $x = x\at{p}\at{left}$; o caso $x = x\at{p}\at{right}$ é simétrico.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Caso 3 da recoloração: \proc{RB-Delete-Fixup}}
+  \begin{itemize}
+    \item $w$ é \alert{preto}, $w\at{left}$ é \alert{vermelho} e $w\at{right}$ é \alert{preto}.
+    \item Trocamos as cores de $w$ e $w\at{left}$ e fazemos \proc{Right-Rotate}$(T, w)$.
+    \item O novo irmão de $x$ tem filho direito vermelho $\Rightarrow$ caso 4.
+  \end{itemize}
+
+  \vspace{2mm}
+  {\centering
+  \begin{tikzpicture}[scale=0.75, transform shape,
+                      rel/.style={font=\small, text=black}]
+    \begin{scope}[xshift=0cm]
+      \node[B] (aB) at (0,0) {B};
+      \node[B] (aA) at (-1.5,-1.1) {A};
+      \node[B] (aD) at (1.5,-1.1) {D};
+      \node[R] (aC) at (0.8,-2.2) {C};
+      \node[B] (aE) at (2.2,-2.2) {E};
+      \draw (aB) -- (aA); \draw (aB) -- (aD); \draw (aD) -- (aC); \draw (aD) -- (aE);
+      \node[sub] (aalpha) at (-1.85,-1.85) {$\alpha$}; \draw (aA) -- (aalpha.apex);
+      \node[sub] (abeta) at (-1.15,-1.85) {$\beta$}; \draw (aA) -- (abeta.apex);
+      \node[sub] (agamma) at (0.45,-2.95) {$\gamma$}; \draw (aC) -- (agamma.apex);
+      \node[sub] (adelta) at (1.15,-2.95) {$\delta$}; \draw (aC) -- (adelta.apex);
+      \node[sub] (aepsilon) at (1.85,-2.95) {$\epsilon$}; \draw (aE) -- (aepsilon.apex);
+      \node[sub] (azeta) at (2.55,-2.95) {$\zeta$}; \draw (aE) -- (azeta.apex);
+      \node[rel, left=1mm of aA] {$x$};
+      \node[rel, right=1mm of aD] {$w$};
+    \end{scope}
+    \draw[->, very thick] (3.3,-1.6) -- (6.0,-1.6)
+      node[midway, above, font=\scriptsize, align=center]
+        {\proc{Right-Rotate}$(T, w)$\\+ recolore};
+    \begin{scope}[xshift=8.6cm]
+      \node[B] (bB) at (0,0) {B};
+      \node[B] (bA) at (-1.5,-1.1) {A};
+      \node[B] (bC) at (1.2,-1.1) {C};
+      \node[R] (bD) at (1.9,-2.2) {D};
+      \node[B] (bE) at (2.6,-3.3) {E};
+      \draw (bB) -- (bA); \draw (bB) -- (bC); \draw (bC) -- (bD); \draw (bD) -- (bE);
+      \node[sub] (balpha) at (-1.85,-1.85) {$\alpha$}; \draw (bA) -- (balpha.apex);
+      \node[sub] (bbeta) at (-1.15,-1.85) {$\beta$}; \draw (bA) -- (bbeta.apex);
+      \node[sub] (bgamma) at (0.85,-1.85) {$\gamma$}; \draw (bC) -- (bgamma.apex);
+      \node[sub] (bdelta) at (1.55,-2.95) {$\delta$}; \draw (bD) -- (bdelta.apex);
+      \node[sub] (bepsilon) at (2.25,-4.05) {$\epsilon$}; \draw (bE) -- (bepsilon.apex);
+      \node[sub] (bzeta) at (2.95,-4.05) {$\zeta$}; \draw (bE) -- (bzeta.apex);
+      \node[rel, left=1mm of bA] {$x$};
+      \node[rel, right=1mm of bC] {novo $w$};
+    \end{scope}
+  \end{tikzpicture}\par}
+
+  \vspace{2mm}
+  \begin{itemize}
+    \item Linhas 13--17. $x\at{p}$ pode ter qualquer cor. A ilustração considera $x = x\at{p}\at{left}$; o caso $x = x\at{p}\at{right}$ é simétrico.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Caso 4 da recoloração: \proc{RB-Delete-Fixup}}
+  \begin{itemize}
+    \item $w$ é \alert{preto} e $w\at{right}$ é \alert{vermelho}.
+    \item $w$ recebe a cor de $x\at{p}$; $x\at{p}$ e $w\at{right}$ ficam pretos; \proc{Left-Rotate}$(T, x\at{p})$.
+    \item O preto extra é eliminado e fazemos $x = T\at{root}$: o laço termina.
+  \end{itemize}
+
+  \vspace{2mm}
+  {\centering
+  \begin{tikzpicture}[scale=0.75, transform shape,
+                      rel/.style={font=\small, text=black}]
+    \begin{scope}[xshift=0cm]
+      \node[R] (aB) at (0,0) {B};
+      \node[B] (aA) at (-1.5,-1.1) {A};
+      \node[B] (aD) at (1.5,-1.1) {D};
+      \node[B] (aC) at (0.8,-2.2) {C};
+      \node[R] (aE) at (2.2,-2.2) {E};
+      \draw (aB) -- (aA); \draw (aB) -- (aD); \draw (aD) -- (aC); \draw (aD) -- (aE);
+      \node[sub] (aalpha) at (-1.85,-1.85) {$\alpha$}; \draw (aA) -- (aalpha.apex);
+      \node[sub] (abeta) at (-1.15,-1.85) {$\beta$}; \draw (aA) -- (abeta.apex);
+      \node[sub] (agamma) at (0.45,-2.95) {$\gamma$}; \draw (aC) -- (agamma.apex);
+      \node[sub] (adelta) at (1.15,-2.95) {$\delta$}; \draw (aC) -- (adelta.apex);
+      \node[sub] (aepsilon) at (1.85,-2.95) {$\epsilon$}; \draw (aE) -- (aepsilon.apex);
+      \node[sub] (azeta) at (2.55,-2.95) {$\zeta$}; \draw (aE) -- (azeta.apex);
+      \node[rel, left=1mm of aA] {$x$};
+      \node[rel, right=1mm of aD] {$w$};
+    \end{scope}
+    \draw[->, very thick] (3.3,-1.6) -- (6.0,-1.6)
+      node[midway, above, font=\scriptsize, align=center]
+        {recolore +\\\proc{Left-Rotate}$(T, x\at{p})$};
+    \begin{scope}[xshift=8.6cm]
+      \node[R] (bD) at (0,0) {D};
+      \node[B] (bB) at (-1.4,-1.1) {B};
+      \node[B] (bE) at (1.4,-1.1) {E};
+      \node[B] (bA) at (-2.1,-2.2) {A};
+      \node[B] (bC) at (-0.7,-2.2) {C};
+      \draw (bD) -- (bB); \draw (bD) -- (bE); \draw (bB) -- (bA); \draw (bB) -- (bC);
+      \node[sub] (balpha) at (-2.45,-2.95) {$\alpha$}; \draw (bA) -- (balpha.apex);
+      \node[sub] (bbeta) at (-1.75,-2.95) {$\beta$}; \draw (bA) -- (bbeta.apex);
+      \node[sub] (bgamma) at (-1.05,-2.95) {$\gamma$}; \draw (bC) -- (bgamma.apex);
+      \node[sub] (bdelta) at (-0.35,-2.95) {$\delta$}; \draw (bC) -- (bdelta.apex);
+      \node[sub] (bepsilon) at (1.05,-1.85) {$\epsilon$}; \draw (bE) -- (bepsilon.apex);
+      \node[sub] (bzeta) at (1.75,-1.85) {$\zeta$}; \draw (bE) -- (bzeta.apex);
+    \end{scope}
+  \end{tikzpicture}\par}
+
+  \vspace{2mm}
+  \begin{itemize}
+    \item Linhas 18--22. $x\at{p}$ e $w\at{left}$ podem ter qualquer cor. A ilustração considera $x = x\at{p}\at{left}$; o caso $x = x\at{p}\at{right}$ é simétrico.
+  \end{itemize}
+\end{frame}
+
 % =====================================================================
 \section{Fechamento}
 % =====================================================================
@@ -2577,5 +3029,12 @@
 %   \centering
 %   {\Large Obrigado!}
 % \end{frame}
+
+\begin{frame}
+  \centering
+  \vfill
+  {\LARGE\color{black} Obrigado!}
+  \vfill
+\end{frame}
 
 \end{document}
