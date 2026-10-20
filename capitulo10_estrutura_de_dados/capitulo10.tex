@@ -1765,13 +1765,13 @@
 \begin{frame}{Mínimo e máximo: \proc{Tree-Minimum} e \proc{Tree-Maximum}}
   \begin{columns}[c]
     \begin{column}{0.42\textwidth}
-      \begin{pseudo}[\small]{\proc{Tree-Minimum}$(x)$}
+      \begin{pseudo}[\normalsize]{\proc{Tree-Minimum}$(x)$}
         \li \WHILE $x\at{left} \neq \NIL$
         \li[1] $x = x\at{left}$
         \li \RETURN $x$
       \end{pseudo}
       \vspace{3mm}
-      \begin{pseudo}[\small]{\proc{Tree-Maximum}$(x)$}
+      \begin{pseudo}[\normalsize]{\proc{Tree-Maximum}$(x)$}
         \li \WHILE $x\at{right} \neq \NIL$
         \li[1] $x = x\at{right}$
         \li \RETURN $x$
@@ -1805,27 +1805,21 @@
 
 \begin{frame}{Sucessor: \proc{Tree-Successor}}
   \begin{columns}[c]
-    \begin{column}{0.56\textwidth}
-      \begin{pseudo}[\scriptsize]{\proc{Tree-Successor}$(x)$}
+    \begin{column}{0.5\textwidth}
+      \begin{pseudo}[\normalsize]{\proc{Tree-Successor}$(x)$}
         \li \IF $x\at{right} \neq \NIL$
-        \li[1] \RETURN \proc{Tree-Minimum}$(x\at{right})$ \Cm{leftmost node in right subtree}
-        \li \ELSE \Cm{find the lowest ancestor of $x$ whose}
-        \par\hfill{\color{gray!70!black}// left child is an ancestor of $x$}
+        \li[1] \RETURN \proc{Tree-Minimum}$(x\at{right})$
+        \li \ELSE
         \li[1] $y = x\at{p}$
         \li[1] \WHILE $y \neq \NIL$ \AND $x \eqq y\at{right}$
         \li[2] $x = y$
         \li[2] $y = y\at{p}$
         \li[1] \RETURN $y$
       \end{pseudo}
-      \vspace{2mm}
-      \begin{itemize}\footnotesize
-        \item Sucessor = próximo nó no percurso em ordem; dispensa comparar chaves.
-        \item \proc{Tree-Predecessor} é simétrico. Ambos $O(h)$.
-      \end{itemize}
     \end{column}
-    \begin{column}{0.42\textwidth}
+    \begin{column}{0.46\textwidth}
       \centering
-      \begin{tikzpicture}[scale=0.62, transform shape, level distance=10mm,
+      \begin{tikzpicture}[scale=0.68, transform shape, level distance=9mm,
                           level 1/.style={sibling distance=32mm},
                           level 2/.style={sibling distance=16mm},
                           level 3/.style={sibling distance=9mm},
@@ -1838,11 +1832,11 @@
           child {node[vtx] (n18) {18} child {node[vtx] (n17) {17}} child {node[vtx] (n20) {20}}};
         \draw[hedge] (n15) -- (n18); \draw[hedge] (n18) -- (n17);
         \node[ov] at (n15) {15}; \node[hv] at (n18) {18}; \node[hv] at (n17) {17};
-        \node[font=\large, anchor=north, align=center] at (0,-4.1) {(c) sucessor de 15 $=17$\\(mínimo da subárvore direita)};
+        \node[font=\large, anchor=east] at (-3.6,0) {\textbf{(a)}};
       \end{tikzpicture}
 
-      \vspace{2mm}
-      \begin{tikzpicture}[scale=0.62, transform shape, level distance=10mm,
+      \vspace{1mm}
+      \begin{tikzpicture}[scale=0.68, transform shape, level distance=9mm,
                           level 1/.style={sibling distance=32mm},
                           level 2/.style={sibling distance=16mm},
                           level 3/.style={sibling distance=9mm},
@@ -1855,16 +1849,22 @@
           child {node[vtx] (n18) {18} child {node[vtx] (n17) {17}} child {node[vtx] (n20) {20}}};
         \draw[hedge] (n13) -- (n7); \draw[hedge] (n7) -- (n6); \draw[hedge] (n6) -- (n15);
         \node[ov] at (n13) {13}; \node[hv] at (n7) {7}; \node[hv] at (n6) {6}; \node[hv] at (n15) {15};
-        \node[font=\large, anchor=north, align=center] at (0,-4.1) {(d) sucessor de 13 $=15$\\(sobe até vir de um filho esquerdo)};
+        \node[font=\large, anchor=east] at (-3.6,0) {\textbf{(b)}};
       \end{tikzpicture}
     \end{column}
   \end{columns}
+
+  \begin{itemize}\footnotesize
+    \item \textbf{(a)} O sucessor de 15 é 17 (o mínimo da subárvore direita de 15)
+    \item \textbf{(b)} O sucessor de 13 é 15: como 13 não tem filho direito, subimos a árvore até
+          encontrar um nó que seja filho esquerdo de seu pai (6); o pai dele (15) é o sucessor.
+  \end{itemize}
 \end{frame}
 
 \begin{frame}{Inserção: \proc{Tree-Insert}}
   \begin{columns}[c]
-    \begin{column}{0.5\textwidth}
-      \begin{pseudo}[\footnotesize]{\proc{Tree-Insert}$(T,z)$}
+    \begin{column}{0.56\textwidth}
+      \begin{pseudo}[\normalsize]{\proc{Tree-Insert}$(T,z)$}
         \li $x = T\at{root}$ \Cm{node being compared with $z$}
         \li $y = \NIL$ \Cm{$y$ will be parent of $z$}
         \li \WHILE $x \neq \NIL$ \Cm{descend until reaching a leaf}
@@ -1880,7 +1880,7 @@
         \li \ELSE $y\at{right} = z$
       \end{pseudo}
     \end{column}
-    \begin{column}{0.48\textwidth}
+    \begin{column}{0.42\textwidth}
       \centering
       \begin{tikzpicture}[level distance=11mm, level 1/.style={sibling distance=30mm},
                           level 2/.style={sibling distance=15mm},
@@ -1898,30 +1898,107 @@
 
       \vspace{2mm}
       {\small Inserção da chave 13: caminho $12\to18\to15$ (azul); novo nó e ligação ao
-      pai em laranja. O ponteiro ``atrasado'' $y$ guarda o futuro pai de $z$.
+      pai em laranja.
       Tempo $O(h)$.}
     \end{column}
   \end{columns}
 \end{frame}
 
-\begin{frame}{Remoção: estratégia}
-  Remover um nó $z$ de uma BST tem três casos básicos:
-  \begin{enumerate}
-    \item $z$ \alert{não tem filhos}: basta substituí-lo por \NIL\ no pai.
-    \item $z$ tem \alert{um filho}: o filho ``sobe'' e ocupa a posição de $z$.
-    \item $z$ tem \alert{dois filhos}: encontre o sucessor $y$ de $z$ (que está na
-          subárvore direita e \alert{não tem filho esquerdo}) e coloque $y$ na posição
-          de $z$. Importa se $y$ é ou não o filho direito de $z$.
-  \end{enumerate}
-  \vspace{2mm}
-  O procedimento organiza em quatro casos:
+\begin{frame}{Sub-rotina \proc{Transplant}}
+  \begin{columns}[c]
+    \begin{column}{0.3\textwidth}
+      \begin{pseudo}[\small]{\proc{Transplant}$(T,u,v)$}
+        \li \IF $u\at{p} \eqq \NIL$
+        \li[1] $T\at{root} = v$
+        \li \ELSEIF $u \eqq u\at{p}\at{left}$
+        \li[1] $u\at{p}\at{left} = v$
+        \li \ELSE $u\at{p}\at{right} = v$
+        \li \IF $v \neq \NIL$
+        \li[1] $v\at{p} = u\at{p}$
+      \end{pseudo}
+    \end{column}
+    \begin{column}{0.68\textwidth}
+      \raggedright
+      \begin{tikzpicture}[scale=0.85, transform shape,
+          rel/.style={font=\small, text=black}]
+        % antes: Transplant(T, 6, 10)
+        \foreach \k/\x/\y in {15/0/0, 6/-2.3/-1.1, 20/1.8/-1.1, 10/-0.9/-2.2,
+                              8/-1.5/-3.3, 12/-0.3/-3.3}
+          \node[vtx] (a\k) at (\x,\y) {\k};
+        \node[R] at (a6) {6};
+        \foreach \c/\p in {6/15, 20/15, 10/6, 8/10, 12/10}
+          \draw (a\p) -- (a\c);
+        \node[rel, above=0.5mm of a15] {$u\at{p}$};
+        \node[rel, left=0.5mm of a6] {$u$};
+        \begin{scope}[on background layer]
+          \node[draw, thick, rounded corners, fill=gray!12, inner sep=1.5mm,
+                fit=(a10)(a8)(a12)] (va) {};
+        \end{scope}
+        \node[rel, anchor=north west] at (va.north east) {$v$};
+        \draw[-{Stealth[length=2.5mm]}, very thick] (va.west) to[bend left=35] (a6.south);
+        \node[font=\footnotesize] at (0,-4.3) {antes};
+        \draw[->, very thick] (2.6,-1.6) -- (4.0,-1.6)
+          node[midway, above, font=\scriptsize, align=center] {\proc{Transplant}\\$(T,6,10)$};
+        % depois
+        \begin{scope}[xshift=6.6cm]
+          \foreach \k/\x/\y in {15/0/0, 10/-1.1/-1.1, 20/1.1/-1.1, 8/-1.7/-2.2, 12/-0.5/-2.2}
+            \node[vtx] (b\k) at (\x,\y) {\k};
+          \foreach \c/\p in {10/15, 20/15, 8/10, 12/10}
+            \draw (b\p) -- (b\c);
+          \node[rel, above=0.5mm of b15] {$u\at{p}$};
+          \node[rel, right=0.5mm of b10] {$v$};
+          \node[vtx, draw=gray, text=gray, dashed] (b6) at (-2.3,-0.2) {6};
+          \node[rel, above=0.5mm of b6] {$u$ (desligado)};
+          \draw[gray, dashed, -{Stealth[length=1.5mm]}] (b6) -- (b10);
+          \node[font=\footnotesize] at (0,-4.3) {depois};
+        \end{scope}
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+
+  \vspace{4mm}
+  \begin{block}{Dica}
+    Intuitivamente, transplante é ``mover'' a subárvore $v$ para $u$.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Casos de remoção em uma BST}
   \begin{itemize}
-    \item[(a)] $z$ sem filho esquerdo: substitui $z$ por seu filho direito (talvez \NIL);
-    \item[(b)] $z$ só com filho esquerdo: substitui $z$ por esse filho;
-    \item[(c)] dois filhos e o sucessor $y$ é $z\at{right}$: substitui $z$ por $y$;
-    \item[(d)] dois filhos e $y \neq z\at{right}$: primeiro substitui $y$ por seu filho
-               direito, depois substitui $z$ por $y$.
+    \item Existem quatro casos de remoção de um nó $z$ em uma BST, que serão comentados
+          nos slides a seguir:
+      \begin{itemize}
+        \item \textbf{Caso 1:} $z$ sem filho esquerdo: substitui $z$ por seu filho
+              direito (talvez \NIL);
+        \item \textbf{Caso 2:} $z$ só com filho esquerdo: substitui $z$ por esse filho;
+        \item \textbf{Caso 3:} dois filhos e o sucessor $y$ é $z\at{right}$: substitui
+              $z$ por $y$;
+        \item \textbf{Caso 4:} dois filhos e $y \neq z\at{right}$: primeiro substitui
+              $y$ por seu filho direito, depois substitui $z$ por $y$.
+      \end{itemize}
   \end{itemize}
+\end{frame}
+
+\begin{frame}{Remoção: \proc{Tree-Delete}}
+  \centering
+  \begin{minipage}{0.75\textwidth}
+  \begin{pseudo}[\small]{\proc{Tree-Delete}$(T,z)$}
+    \li \IF $z\at{left} \eqq \NIL$
+    \li[1] \proc{Transplant}$(T,z,z\at{right})$ \Cm{replace $z$ by its right child}
+    \li \ELSEIF $z\at{right} \eqq \NIL$
+    \li[1] \proc{Transplant}$(T,z,z\at{left})$ \Cm{replace $z$ by its left child}
+    \li \ELSE $y = \proc{Tree-Minimum}(z\at{right})$ \Cm{$y$ is $z$'s successor}
+    \li[1] \IF $y \neq z\at{right}$ \Cm{is $y$ farther down the tree?}
+    \li[2] \proc{Transplant}$(T,y,y\at{right})$ \Cm{replace $y$ by its right child}
+    \li[2] $y\at{right} = z\at{right}$ \Cm{$z$'s right child becomes}
+    \li[2] $y\at{right}\at{p} = y$ \Cm{\quad $y$'s right child}
+    \li[1] \proc{Transplant}$(T,z,y)$ \Cm{replace $z$ by its successor $y$}
+    \li[1] $y\at{left} = z\at{left}$ \Cm{and give $z$'s left child to $y$,}
+    \li[1] $y\at{left}\at{p} = y$ \Cm{\quad which had no left child}
+  \end{pseudo}
+  \end{minipage}
+
+  \vspace{3mm}
+  {\footnotesize Tudo é $O(1)$ exceto \proc{Tree-Minimum}: $O(h)$.}
 \end{frame}
 
 % =====================================================================
