@@ -1116,32 +1116,35 @@
           \node[idx, text=black] at ($(A\j.north)+(0,0.17)$) {\j};
         }
         \node[left=1mm of A0] {$T$};
-        \node[el] (a1) at (0.6,-1.0) {1}; \draw[ptrdot] (A1.center) -- (a1);
-        \node[el, fill=hlb!80, text=white] (a3) at (1.8,-1.0) {3}; \draw[ptrdot] (A3.center) -- (a3);
-        \node[font=\small, anchor=west] at (3.8,-0.8) {\proc{Search}$(T,3)$:};
-        \node[font=\small, anchor=west] at (3.8,-1.2) {retorna $T[3]$};
-        \draw[->, thick] (3.7,-1.0) -- (a3.east);
+        \node[el, fill=hlb!80, text=white] (a1) at (0.6,-1.0) {1}; \draw[ptrdot] (A1.center) -- (a1);
+        \node[el] (a3) at (1.8,-1.0) {3}; \draw[ptrdot] (A3.center) -- (a3);
+        \node[font=\small, anchor=west] at (3.8,-0.8) {\proc{Search}$(T,1)$:};
+        \node[font=\small, anchor=west] at (3.8,-1.2) {retorna $T[1]$};
+        \draw[->, thick] (3.7,-1.0) to[bend left=35] (a1.south);
         % após insert
         \node[font=\small, anchor=west] at (-1.0,-2.0) {após \proc{Insert}$(T,x)$ com $x\at{key}=4$:};
         \foreach \j in {0,...,5} {
-          \pgfmathtruncatemacro{\oc}{(\j==2)||(\j==4)}
+          \pgfmathtruncatemacro{\oc}{(\j==1)||(\j==3)||(\j==4)}
           \ifnum\oc=1 \def\fc{white}\else\def\fc{nilb}\fi
           \node[cell, fill=\fc] (B\j) at (\j*0.6,-2.8) {};
           \node[idx, text=black] at ($(B\j.north)+(0,0.17)$) {\j};
         }
         \node[left=1mm of B0] {$T$};
-        \node[el] (b2) at (1.2,-3.8) {2}; \draw[ptrdot] (B2.center) -- (b2);
+        \node[el] (b1) at (0.6,-3.8) {1}; \draw[ptrdot] (B1.center) -- (b1);
+        \node[el] (b3) at (1.8,-3.8) {3}; \draw[ptrdot] (B3.center) -- (b3);
         \node[el, fill=orangec!70] (b4) at (2.4,-3.8) {4}; \draw[ptrdot] (B4.center) -- (b4);
         % após delete
         \node[font=\small, anchor=west] at (-1.0,-4.8) {após \proc{Delete}$(T,y)$ com $y\at{key}=1$:};
         \foreach \j in {0,...,5} {
-          \ifnum\j=3 \def\fc{white}\else\def\fc{nilb}\fi
+          \pgfmathtruncatemacro{\oc}{(\j==3)||(\j==4)}
+          \ifnum\oc=1 \def\fc{white}\else\def\fc{nilb}\fi
           \node[cell, fill=\fc] (C\j) at (\j*0.6,-5.6) {};
           \node[idx, text=black] at ($(C\j.north)+(0,0.17)$) {\j};
         }
         \node[left=1mm of C0] {$T$};
         \node[cell, fill=orangec!60] at (C1) {\tiny\NIL};
         \node[el] (c3) at (1.8,-6.6) {3}; \draw[ptrdot] (C3.center) -- (c3);
+        \node[el] (c4) at (2.4,-6.6) {4}; \draw[ptrdot] (C4.center) -- (c4);
         % \node[font=\scriptsize, anchor=west] at (3.6,-3.8) {$x$ inserido};
       \end{tikzpicture}
     \end{column}
