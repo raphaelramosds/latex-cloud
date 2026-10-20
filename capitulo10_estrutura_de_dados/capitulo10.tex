@@ -1602,6 +1602,27 @@
   \end{tikzpicture}
 \end{frame}
 
+\begin{frame}{Análise do endereçamento aberto}
+  \setbeamercolor{block title alerted}{fg=white, bg=rbred}
+  \setbeamercolor{block body alerted}{fg=black, bg=rbred!10}
+  \begin{alertblock}{Pior caso}
+    A sequência de sondagem visita todas as $m$ posições: busca e inserção em $\Theta(m)$, em que $m$ é o tamanho da tabela
+  \end{alertblock}
+  \begin{block}{Caso médio}
+    Seja $\alpha = n/m < 1$ (fator de carga). Com hashing uniforme, cada sonda encontra uma posição
+    ocupada com probabilidade $\le \alpha$. A $i$-ésima sonda só ocorre se as $i-1$ anteriores
+    acharam posições ocupadas (probabilidade $\le \alpha^{i-1}$).
+    \begin{itemize}
+      \item busca \emph{sem sucesso}: número esperado de sondas
+            $\le 1 + \alpha + \alpha^2 + \cdots = \frac{1}{1-\alpha}$;
+      \item \proc{Insert}: busca sem sucesso seguida da escrita na posição vazia
+            $\Rightarrow$ também $\le \frac{1}{1-\alpha}$.
+    \end{itemize}
+    Se $\alpha$ é constante, então \alert{busca e inserção em $O(1)$ em média}
+    (ex.: $\alpha = 0{,}5 \Rightarrow \le 2$ sondas; $\alpha = 0{,}9 \Rightarrow \le 10$ sondas).
+  \end{block}
+\end{frame}
+
 % \begin{frame}{Desempenho do endereçamento aberto}
 %   \begin{columns}[c]
 %     \begin{column}{0.5\textwidth}
