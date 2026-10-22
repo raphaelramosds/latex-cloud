@@ -60,7 +60,7 @@ network}
 
 \begin{frame}{Motivação}
   \begin{columns}[T]
-    \begin{column}{0.46\textwidth}
+    \begin{column}{0.42\textwidth}
       \begin{itemize}
         \item Difrações revelam estruturas \textbf{pequenas}: falhas, fraturas, cavidades.
         \item Reflexões, muito mais fortes, as \textbf{mascaram}.
@@ -73,9 +73,9 @@ network}
         {\small Recuperar $\mathbf{d}$ a partir de $\mathbf{y}$.}
       \end{block}
     \end{column}
-    \begin{column}{0.5\textwidth}
+    \begin{column}{0.56\textwidth}
       \centering
-      \includegraphics[height=0.6\textheight]{fig05.png}\\
+      \includegraphics[width=\linewidth,height=0.71\textheight,keepaspectratio]{fig05.png}\\
       {\scriptsize (a) dado \quad (b) só reflexão \quad (c) só difração}
       \fonte{Sheng \& Zhao (2022), Fig. 5}
     \end{column}
@@ -130,7 +130,7 @@ network}
       \centering
       \includegraphics[width=\textwidth]{fig02.png}\\
       {\scriptsize convencional \quad dilatada}
-      \fonte{Fig. 2}
+      \fonte{Sheng \& Zhao (2022), Fig. 2}
     \end{column}
     \begin{column}{0.66\textwidth}
       \begin{itemize}
@@ -192,18 +192,17 @@ network}
 
 \begin{frame}{Sigsbee2A: PWD $\times$ DCNN}
   \begin{columns}[T]
-    \begin{column}{0.48\textwidth}
+    \begin{column}{0.52\textwidth}
       \centering
-      \includegraphics[height=0.66\textheight]{fig09.png}\\
+      \includegraphics[width=\linewidth,height=0.71\textheight,keepaspectratio]{fig09.png}\\
       {\scriptsize (a) PWD \quad (b) resíduo \quad (c) DCNN \quad (d) resíduo}
       \fonte{Sheng \& Zhao (2022), Fig. 9}
     \end{column}
-    \begin{column}{0.48\textwidth}
+    \begin{column}{0.44\textwidth}
       \begin{itemize}
         \item PWD apaga os \alert{ápices} e trechos tangentes (setas).
         \item DCNN preserva as hipérboles inteiras.
       \end{itemize}
-      \vspace{6pt}
       \centering
       \begin{tabular}{lc}
         \toprule
@@ -214,7 +213,7 @@ network}
         DCNN & $\mathbf{3{,}59\times10^{-5}}$ \\
         \bottomrule
       \end{tabular}
-      \vspace{6pt}
+      \vspace{2pt}
       \begin{block}{EQM: erro quadrático médio}
         \small
         $\text{EQM} = \frac{1}{M}\sum_{k=1}^{M}\big(\hat{d}_k - d_k\big)^2$\\[2pt]
@@ -230,8 +229,8 @@ network}
   \begin{columns}[T]
     \begin{column}{0.5\textwidth}
       \centering
-      \includegraphics[height=0.68\textheight]{fig10.png}
-      \fonte{Sheng \& Zhao (2022), Fig. 10}
+      \includegraphics[width=\linewidth,height=0.775\textheight,keepaspectratio]{fig10.png}\\
+      {\scriptsize\color{gray} Fonte: Sheng \& Zhao (2022), Fig. 10}
     \end{column}
     \begin{column}{0.46\textwidth}
       \begin{enumerate}[(a)]
@@ -250,7 +249,7 @@ network}
   \begin{columns}[T]
     \begin{column}{0.5\textwidth}
       \centering
-      \includegraphics[height=0.66\textheight]{fig16.png}\\
+      \includegraphics[width=\linewidth,height=0.71\textheight,keepaspectratio]{fig16.png}\\
       {\scriptsize (a) dado \quad (b) PWD \quad (c) DCNN}
       \fonte{Sheng \& Zhao (2022), Fig. 16}
     \end{column}
