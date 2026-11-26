@@ -211,6 +211,8 @@
 \begin{frame}{Regra de Horner}
   \begin{columns}[T]
     \begin{column}{0.5\textwidth}
+      A avaliação de um polinômio em $x = x_0$ pode ser feita começando
+      do último coeficiente ($a_{n-1}$).\\[4pt]
       \textbf{Avaliar} $A(x_0)$ com a \textbf{regra de Horner} em $\Theta(n)$:
       \[
         A(x_0) = a_0 + x_0\big(a_1 + x_0(a_2 + \cdots + x_0(a_{n-1}))\big)
@@ -273,10 +275,10 @@
       \begin{tikzpicture}[scale=0.55]
         \draw[->, gray] (-1.8,0) -- (1.8,0) node[right, font=\tiny] {$x$};
         \draw[->, gray] (0,-0.3) -- (0,3.4) node[above, font=\tiny] {$y$};
-        \draw[verde, thick, domain=-1.45:1.05, samples=40]
+        \draw[black, thick, domain=-1.45:1.05, samples=40]
           plot (\x, {(1 + 2*\x + 3*\x*\x)/2});
         \foreach \p/\q in {0/1, 1/6, -1/2}
-          \node[circle, fill=laranja, inner sep=1.6pt] at (\p, \q/2) {};
+          \node[circle, fill=black, inner sep=1.6pt] at (\p, \q/2) {};
         \node[font=\tiny, right] at (1,3) {$(1,6)$};
         \node[font=\tiny, left]  at (-1,1) {$(-1,2)$};
         \node[font=\tiny, below right] at (0,0.5) {$(0,1)$};
@@ -318,7 +320,7 @@
         $\det V = (1-0)(-1-0)(-1-1) = 2 \neq 0$.\\
         Resolvendo $Va = (1,6,2)^T$:
         $a_0 = 1$, $a_1+a_2 = 5$, $-a_1+a_2 = 1$\\
-        $\Rightarrow a = (1, 2, 3)$: $A(x) = 1 + 2x + 3x^2$. \checkmark
+        $\Rightarrow a = (1, 2, 3)$: $A(x) = 1 + 2x + 3x^2$.
       \end{exampleblock}
     \end{column}
   \end{columns}
@@ -349,7 +351,7 @@
                  + 6\cdot\frac{x(x+1)}{(1)(2)}\\
                &\quad + 2\cdot\frac{x(x-1)}{(-1)(-2)}\\
                &= -(x^2-1) + 3(x^2+x) + (x^2-x)\\
-               &= 3x^2 + 2x + 1. \;\checkmark
+               &= 3x^2 + 2x + 1. \
         \end{align*}
       \end{exampleblock}
     \end{column}
@@ -383,7 +385,7 @@
             \bottomrule
           \end{tabular}
         \end{center}
-        Interpolando: $C(x) = 2 + 3x + x^2$. Confere: $C(3) = 2+9+9 = 20$. \checkmark\\[2pt]
+        Interpolando: $C(x) = 2 + 3x + x^2$. Confere: $C(3) = 2+9+9 = 20$.\\[2pt]
         {\small Com só 2 pontos ($x=0,1$), infinitas parábolas passariam por $(0,2)$ e $(1,6)$.}
       \end{exampleblock}
     \end{column}
@@ -445,7 +447,7 @@
       \begin{exampleblock}{Exemplo ($n=4$)}
         $\omega_4 = e^{2\pi i/4} = \cos\frac{\pi}{2} + i\sin\frac{\pi}{2} = i$.\\
         Raízes: $\w[4]{0}=1,\ \w[4]{1}=i,\ \w[4]{2}=-1,\ \w[4]{3}=-i$.\\
-        Conferindo: $i^4 = (i^2)^2 = (-1)^2 = 1$. \checkmark
+        Conferindo: $i^4 = (i^2)^2 = (-1)^2 = 1$.
       \end{exampleblock}
     \end{column}
     \begin{column}{0.41\textwidth}
@@ -487,7 +489,7 @@
         \begin{itemize}
           \item $\w[8]{5}\cdot\w[8]{6} = \w[8]{11} = \w[8]{11 \bmod 8} = \w[8]{3}$.
           \item $\w[8]{-1} = \w[8]{7}$, pois $\w[8]{1}\cdot\w[8]{7} = \w[8]{8} = 1$.
-          \item $n=4$: $i \cdot (-i) = \w[4]{1}\w[4]{3} = \w[4]{4} = 1$. \checkmark
+          \item $n=4$: $i \cdot (-i) = \w[4]{1}\w[4]{3} = \w[4]{4} = 1$.
         \end{itemize}
       \end{exampleblock}
       \begin{block}{Ideia}
@@ -586,8 +588,8 @@
     \begin{column}{0.44\textwidth}
       \begin{exampleblock}{Exemplos ($n=4$)}
         \begin{itemize}
-          \item $k=1$: $1 + i + (-1) + (-i) = 0$ \checkmark
-          \item $k=2$: $1 + (-1) + 1 + (-1) = 0$ \checkmark
+          \item $k=1$: $1 + i + (-1) + (-i) = 0$
+          \item $k=2$: $1 + (-1) + 1 + (-1) = 0$
           \item $k=4$ ($4 \mid 4$): $1+1+1+1 = 4 \neq 0$\\
                 {\small por isso a hipótese é necessária.}
         \end{itemize}
@@ -711,7 +713,7 @@
           \Aod(x) &= 1 + 3x
         \end{align*}
         Conferindo: $\Aev(x^2) + x\,\Aod(x^2)$\\
-        $= 2x^2 + x(1 + 3x^2) = A(x)$. \checkmark
+        $= 2x^2 + x(1 + 3x^2) = A(x)$.
       \end{exampleblock}
       \begin{alertblock}{Halving em ação}
         \small Os $n$ quadrados $(\w{k})^2$ são só as $n/2$ raízes
@@ -824,7 +826,7 @@
           $y_1 = -2 + i(-2) = -2-2i$\\
           $y_3 = -2 - i(-2) = -2+2i$
       \end{itemize}
-      Mesmo resultado do cálculo direto da DFT. \checkmark
+      Mesmo resultado do cálculo direto da DFT.
     \end{column}
   \end{columns}
 \end{frame}
@@ -899,7 +901,7 @@
           V_2 = \begin{pmatrix} 1 & 1\\ 1 & -1\end{pmatrix},\quad
           V_2^{-1} = \frac12\begin{pmatrix} 1 & 1\\ 1 & -1\end{pmatrix}
         \]
-        Conferindo: $V_2^{-1}V_2 = \frac12\begin{pmatrix} 2 & 0\\ 0 & 2\end{pmatrix} = I$ \checkmark
+        Conferindo: $V_2^{-1}V_2 = \frac12\begin{pmatrix} 2 & 0\\ 0 & 2\end{pmatrix} = I$
       \end{exampleblock}
       \begin{exampleblock}{Exemplo ($n=4$, $\w[4]{-1} = -i$)}
         \[
@@ -941,7 +943,7 @@
               &= \tfrac44 = 1
         \end{align*}
         Da mesma forma, $a_0 = \tfrac14(6 - 2 - 2 - 2) = 0$, $a_2 = 2$ e $a_3 = 3$.\\
-        Recuperamos $a = (0,1,2,3)$. \checkmark
+        Recuperamos $a = (0,1,2,3)$.
       \end{exampleblock}
     \end{column}
   \end{columns}
@@ -1009,7 +1011,7 @@
         c_3 &= \tfrac14(12 + (i{-}7) + 2 + (-7{-}i)) = 0
       \end{align*}
       \begin{exampleblock}{Resultado}
-        $C(x) = 3 + 7x + 2x^2$ --- igual à convolução direta feita na Introdução. \checkmark
+        $C(x) = 3 + 7x + 2x^2$ --- igual à convolução direta feita na Introdução.
       \end{exampleblock}
     \end{column}
   \end{columns}
@@ -1211,7 +1213,7 @@
         \item fios 0 e 2: $2 \pm 1\cdot 4 = 6,\ -2$
         \item fios 1 e 3: $-2 \pm i\cdot(-2) = -2-2i,\ -2+2i$
       \end{itemize}
-      O circuito executa a recursão \textbf{de baixo para cima} e chega à mesma DFT. \checkmark
+      O circuito executa a recursão \textbf{de baixo para cima} e chega à mesma DFT.
     \end{column}
   \end{columns}
 \end{frame}
