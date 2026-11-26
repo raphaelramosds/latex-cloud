@@ -38,6 +38,9 @@
 \setbeamercolor{block title example}{bg=azul,fg=white}
 \setbeamercolor{block body example}{bg=azulclaro,fg=black}
 \setbeamercolor{alerted text}{fg=black}
+\setbeamercolor{itemize item}{fg=black}
+\setbeamercolor{itemize subitem}{fg=black}
+\setbeamercolor{itemize subsubitem}{fg=black}
 
 % Roteiro no início de cada seção (como no Cap. 10)
 \AtBeginSection[]{%
@@ -329,19 +332,15 @@
 \begin{frame}{Interpolação de Lagrange}
   \begin{columns}[T]
     \begin{column}{0.46\textwidth}
-      Algoritmo mais rápido ($\Theta(n^2)$), pela \textbf{fórmula de Lagrange}:
+      Algoritmo mais rápido ($\Theta(n^2)$), pela \textbf{Interpolação de Lagrange}:
       \[
         A(x) = \sum_{k=0}^{n-1} y_k \,
         \frac{\prod_{j\neq k}(x - x_j)}{\prod_{j\neq k}(x_k - x_j)}
       \]
       \begin{itemize}
         \item Cada fração vale $1$ em $x_k$ e $0$ nos demais $x_j$.
-        \item Avaliação e interpolação são \textbf{operações inversas} bem definidas.
+        \item Avaliação e interpolação são operações inversas bem definidas.
       \end{itemize}
-      \begin{alertblock}{Observação}
-        \small Interpolação é numericamente delicada: pequenos erros de arredondamento
-        podem gerar grandes diferenças no resultado.
-      \end{alertblock}
     \end{column}
     \begin{column}{0.5\textwidth}
       \begin{exampleblock}{Exemplo}
@@ -361,70 +360,65 @@
 \begin{frame}{Operações na representação por pontos}
   \begin{columns}[T]
     \begin{column}{0.5\textwidth}
-      Se $A$ e $B$ são avaliados \textbf{nos mesmos pontos}:
+      Sejam $A$ e $B$ de limite de grau $n$,
+      avaliados nos mesmos pontos:
       \begin{itemize}
         \item \textbf{Soma}: $C(x_k) = A(x_k) + B(x_k)$ \;\; $\Theta(n)$.
-        \item \textbf{Produto}: $C(x_k) = A(x_k)\,B(x_k)$ \;\; $\Theta(n)$!
+        \item \textbf{Produto}: $C(x_k) = A(x_k)\,B(x_k)$ \;\; $\Theta(n)$.
       \end{itemize}
       \begin{alertblock}{Cuidado}
         $C = AB$ tem limite de grau $2n$, então precisa de $2n$ pontos.
-        Use representações \textbf{estendidas} de $A$ e $B$, com $2n$ pontos cada.
+        Use representações estendidas de $A$ e $B$, com $2n$ pontos cada.
       \end{alertblock}
     \end{column}
     \begin{column}{0.46\textwidth}
-      \begin{exampleblock}{Exemplo}
-        $A(x) = 1 + x$, \; $B(x) = 2 + x$ ($n=2$). Pontos $x = 0,1,2,3$:
-        \begin{center}
+      \begin{exampleblock}{Exemplo: estendendo $B$}
+        \small
+        $A(x) = 1 + x$ dado em $x = 0,1,2,3$; \;
+        $B(x) = 2 + x$ dado só em $x = 0,1$.\\[2pt]
+        $n = 2$ $\Rightarrow$ $C = AB$ precisa de $2n = 4$ pontos:
+        estender $B$ avaliando $B(2) = 4$ e $B(3) = 5$.
+        \begin{center}\vspace{-4pt}
           \begin{tabular}{ccccc}
             \toprule
             $x_k$ & $0$ & $1$ & $2$ & $3$ \\
             \midrule
             $A(x_k)$ & $1$ & $2$ & $3$ & $4$ \\
-            $B(x_k)$ & $2$ & $3$ & $4$ & $5$ \\
+            $B(x_k)$ & $2$ & $3$ & $\mathbf{4}$ & $\mathbf{5}$ \\
             $C(x_k)$ & $2$ & $6$ & $12$ & $20$ \\
             \bottomrule
-          \end{tabular}
+          \end{tabular}\vspace{-6pt}
         \end{center}
-        Interpolando: $C(x) = 2 + 3x + x^2$. Confere: $C(3) = 2+9+9 = 20$.\\[2pt]
-        {\small Com só 2 pontos ($x=0,1$), infinitas parábolas passariam por $(0,2)$ e $(1,6)$.}
+        Interpolando: $C(x) = 2 + 3x + x^2$.
       \end{exampleblock}
     \end{column}
   \end{columns}
 \end{frame}
 
 \begin{frame}{Multiplicação rápida: a estratégia}
+  \small
+  \begin{enumerate}
+    \item \textbf{Dobrar o limite de grau}: tratar $A$ e $B$ como de limite de grau $2n$, com $a_j = b_j = 0$ para $j \ge n$. \hfill $\Theta(n)$
+    \item \textbf{Avaliar}: FFT de ordem $2n$ em $A$ e $B$. \hfill $\Theta(n\lg n)$
+    \item \textbf{Multiplicar ponto a ponto}. \hfill $\Theta(n)$
+    \item \textbf{Interpolar}: FFT inversa. \hfill $\Theta(n\lg n)$
+  \end{enumerate}
+
+  \vspace{6pt}
+  \normalsize
   \centering
   \begin{tikzpicture}[node distance=0.4cm]
     \node[bloco] (ab) {$a_0,\dots,a_{n-1}$\\ $b_0,\dots,b_{n-1}$};
-    \node[bloco, right=5.2cm of ab] (c) {$c_0,\dots,c_{2n-2}$};
+    \node[bloco, right=4.3cm of ab] (c) {$c_0,\dots,c_{2n-2}$};
     \node[destaque, below=1.5cm of ab] (pv) {$A(\w[2n]{k}),\,B(\w[2n]{k})$\\ $k=0,\dots,2n-1$};
     \node[destaque, below=1.5cm of c] (cv) {$C(\w[2n]{k})$\\ $k=0,\dots,2n-1$};
     \draw[seta, dashed] (ab) -- node[above, font=\footnotesize] {multiplicação comum: $\Theta(n^2)$} (c);
     \draw[seta] (ab) -- node[left, font=\footnotesize, align=right] {Avaliação\\ (FFT) $\Theta(n\lg n)$} (pv);
     \draw[seta] (pv) -- node[below, font=\footnotesize] {multiplicação ponto a ponto: $\Theta(n)$} (cv);
     \draw[seta] (cv) -- node[right, font=\footnotesize, align=left] {Interpolação\\ (FFT inversa) $\Theta(n\lg n)$} (c);
-    \node[left=0.3cm of ab, font=\scriptsize, align=right, text=gray] {Coeficientes};
-    \node[left=0.3cm of pv, font=\scriptsize, align=right, text=gray] {Pontos};
+    \node[left=0.3cm of ab, font=\scriptsize, align=right, text=black] {Representação por\\coeficientes};
+    \node[left=0.3cm of pv, font=\scriptsize, align=right, text=black] {Representação por\\pontos};
   \end{tikzpicture}
-
-  \vspace{6pt}
-  \begin{columns}[T]
-    \begin{column}{0.55\textwidth}
-      \small
-      \begin{enumerate}
-        \item \textbf{Dobrar o limite de grau}: completar com $n$ zeros. \hfill $\Theta(n)$
-        \item \textbf{Avaliar}: FFT de ordem $2n$ em $A$ e $B$. \hfill $\Theta(n\lg n)$
-        \item \textbf{Multiplicar ponto a ponto}. \hfill $\Theta(n)$
-        \item \textbf{Interpolar}: FFT inversa. \hfill $\Theta(n\lg n)$
-      \end{enumerate}
-    \end{column}
-    \begin{column}{0.4\textwidth}
-      \begin{block}{Teorema 30.2}
-        \small Dois polinômios de limite de grau $n$, em coeficientes, podem ser
-        multiplicados em $\Theta(n\lg n)$.
-      \end{block}
-    \end{column}
-  \end{columns}
 \end{frame}
 
 % =====================================================================
@@ -452,18 +446,19 @@
     \end{column}
     \begin{column}{0.41\textwidth}
       \centering
-      \begin{tikzpicture}[scale=1.55]
+      \begin{tikzpicture}[scale=1.8]
         \draw[->, gray] (-1.35,0) -- (1.4,0);
         \draw[->, gray] (0,-1.3) -- (0,1.35);
         \draw[gray!60, dashed] (0,0) circle (1);
         \foreach \k in {0,...,7} {
-          \node[raiz] (r\k) at ({45*\k}:1) {};
-          \node[font=\scriptsize] at ({45*\k}:1.24) {$\w[8]{\k}$};
+          \node[raiz, fill=black] (r\k) at ({45*\k}:1) {};
+          \node[font=\normalsize, text=black] at ({45*\k}:1.3) {$\w[8]{\k}$};
         }
-        \draw[verde, ->] (0.35,0) arc (0:45:0.35);
-        \node[font=\tiny, verde] at (22.5:0.5) {$\frac{2\pi}{8}$};
-        \node[font=\tiny, below left] at (1,0) {$1$};
-        \node[font=\tiny, left] at (0,1) {$i$};
+        \draw[black, dotted, thick] (0,0) -- (r1);
+        \draw[black, ->] (0.35,0) arc (0:45:0.35);
+        \node[font=\footnotesize, text=black] at (22.5:0.58) {$\frac{2\pi}{8}$};
+        \node[font=\footnotesize, text=black, below left] at (1,0) {$1$};
+        \node[font=\footnotesize, text=black, left] at (0,1) {$i$};
       \end{tikzpicture}\\
       {\scriptsize As $n$ raízes são igualmente espaçadas no círculo unitário ($n=8$).}
     \end{column}
